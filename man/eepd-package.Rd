@@ -11,5 +11,11 @@ What the package does (one paragraph).
 \author{
 \strong{Maintainer}: Noah Greifer \email{ngreifer@iq.harvard.edu} (\href{https://orcid.org/0000-0003-3067-7154}{ORCID})
 
+Authors:
+\itemize{
+  \item Thomas Leavitt \email{thomas.leavitt@baruch.cuny.edu} (\href{https://orcid.org/0000-0002-3668-6409}{ORCID})
+  \item Laura Hatfield \email{hatfield@hcp.med.harvard.edu} (\href{https://orcid.org/0000-0003-0366-3929}{ORCID})
+}
+
 }
 \keyword{internal}

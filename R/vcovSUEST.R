@@ -1,0 +1,159 @@
+#Joint covariance matrix of coefficients across multiple models. Requires same units in all models,
+#use NA weights to subset (e.g., weights of 1 for present and NA for absent). Should give
+#same results as M-estimation (HC0 vcov). Cluster-robust vcov available.
+vcovSUEST <- function(fits, cluster = NULL) {
+  
+  if (is.null(names(fits)) || anyDuplicated(names(fits)) > 0) {
+    names(fits) <- paste0("fit_", seq_along(fits))
+  }
+  
+  rownames <- lapply(fits, function(x) rownames(naresid(x$na.action, model.matrix(x))))
+  u <- unique(unlist(rownames, use.names = FALSE))
+  
+  if (!is.null(cluster)) {
+    if (inherits(cluster, "formula")) {
+      cluster_tmp <- expand.model.frame(fits[[1]], cluster, na.expand = TRUE)
+      cluster_f <- as.list(model.frame(cluster, cluster_tmp, na.action = na.pass))
+    }
+    else {
+      cluster_f <- as.list(as.data.frame(cluster))
+    }
+    
+    for (i in seq_along(cluster_f)) {
+      cluster_f[[i]] <- .fill_vec(u, setNames(cluster_f[[i]], rownames[[1]]))
+    }
+    
+    if (inherits(cluster, "formula")) {
+      for (f in seq_along(fits)[-1L]) {
+        cluster_tmp <- expand.model.frame(fits[[f]], cluster, na.expand = TRUE)
+        cluster_fi <- as.list(model.frame(cluster, cluster_tmp, na.action = na.pass))
+        
+        
+        for (i in seq_along(cluster_f)) {
+          cluster_f[[i]] <- .fill_vec(u, setNames(cluster_fi[[i]], rownames[[f]]))
+        }
+      }
+    }
+    
+    cluster <- c(cluster_f, list(u))
+  }
+  else {
+    cluster <- list(u)
+  }
+  
+  p <- length(cluster)
+  if (p > 1L) {
+    clu <- lapply(seq_len(p), function(i) utils::combn(seq_len(p), i, simplify = FALSE))
+    clu <- unlist(clu, recursive = FALSE)
+    sign <- vapply(clu, function(i) (-1)^(length(i) + 1), numeric(1L))
+    paste_ <- function(...) paste(..., sep = "_")
+    for (i in (p + 1L):length(clu)) {
+      cluster <- c(cluster, list(Reduce(paste_, unclass(cluster[clu[[i]]]))))
+    }
+  }
+  else {
+    clu <- list(1)
+    sign <- 1
+  }
+  
+  #Small sample adjustment (setting cadjust = TRUE in vcovCL)
+  g <- vapply(seq_along(clu), function(i) {
+    if (is.factor(cluster[[i]])) {
+      nlevels(cluster[[i]])
+    }
+    else {
+      length(unique(cluster[[i]]))
+    }
+  }, numeric(1L))
+  
+  breads <- lapply(fits, function(f) .bread(f) / nobs(f))
+
+  ef <- lapply(seq_along(fits), function(i) {
+    ef_i <- sandwich::estfun(fits[[i]])
+    ef_i[is.na(ef_i)] <- 0
+    rownames(ef_i) <- rownames[[i]]
+    
+    .fill_mat(u, ef_i)
+  })
+  
+  coef_lengths <- vapply(ef, ncol, numeric(1L))
+  
+  coef_inds <- split(seq_len(sum(coef_lengths)),
+                     rep(seq_along(coef_lengths), coef_lengths))
+  
+  #VCOV matrix to be returned
+  V <- matrix(NA_real_, nrow = sum(coef_lengths), ncol = sum(coef_lengths))
+  dimnames(V) <- rep.int(list(unlist(lapply(seq_along(fits), function(i) {
+    paste(names(fits)[i], colnames(ef[[i]]), sep = "_")
+  }))), 2L)
+  
+  for (i in seq_along(fits)) {
+    ind_i <- coef_inds[[i]]
+    
+    #Usual within-model HC0 vcov
+    S <- 0
+    for (u in seq_along(clu)) {
+      cu <- cluster[[u]]
+      gu <- length(unique(cu[-fits[[i]]$na.action]))
+      adj <- gu/(gu - 1)
+      S <- S + sign[u] * adj * crossprod(rowsum(ef[[i]], cu, reorder = FALSE))
+    }
+    
+    V[ind_i, ind_i] <- breads[[i]] %*% S %*% breads[[i]]
+    
+    for (j in seq_along(fits)[-seq_len(i)]) {
+      ind_j <- coef_inds[[j]]
+      
+      S <- 0
+      for (u in seq_along(clu)) {
+        cu <- cluster[[u]]
+        
+        gui <- length(unique(cu[-fits[[i]]$na.action]))
+        guj <- length(unique(cu[-fits[[j]]$na.action]))
+        
+        adj <- sqrt(gui/(gui - 1)) * sqrt(guj/(guj - 1))
+
+        S <- S + sign[u] * adj * crossprod(rowsum(ef[[i]], cu, reorder = FALSE),
+                                           rowsum(ef[[j]], cu, reorder = FALSE))
+      }
+      
+      #between-model vcov components
+      V[ind_i, ind_j] <- breads[[i]] %*% S %*% breads[[j]]
+      V[ind_j, ind_i] <- t(V[ind_i, ind_j])
+    }
+  }
+  
+  V
+}
+
+#Quickly get bread matrix; for non-lm and nonglm objects, uses sandwich::bread()
+.bread <- function(x) {
+  if (!class(x)[1] %in% c("lm", "glm")) {
+    return(sandwich::bread(x))
+  }
+  
+  p <- x$rank
+  
+  if (p == 0) {
+    return(matrix(NA_real_, 0L, 0L))
+  }
+  
+  Qr <- x$qr
+  
+  coef.p <- x$coefficients[Qr$pivot[1:p]]
+  cov.unscaled <- chol2inv(Qr$qr[1:p, 1:p, drop = FALSE])
+  dimnames(cov.unscaled) <- list(names(coef.p), names(coef.p))
+  
+  df <- p + x$df.residual
+  
+  out <- cov.unscaled * df
+  
+  if (class(x)[1] == "glm" && !substr(x$family$family, 1L, 17L) %in% c("poisson", "binomial", "Negative Binomial")) {
+    ww <- weights(x, "working")
+    wres <- as.vector(residuals(x, "working")) * ww
+    dispersion <- sum(wres^2, na.rm = TRUE) / sum(ww, na.rm = TRUE)
+    out <- out * dispersion
+  }
+  
+  out
+}

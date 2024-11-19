@@ -1,0 +1,99 @@
+---
+title: "eepd Demo"
+author: "Noah Greifer"
+date: "`r Sys.Date()`"
+vignette: >
+  %\VignetteIndexEntry{clarify}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(eepd)
+data("ptpdata")
+```
+
+Specify models
+
+```{r}
+models <- eepd_mod(crude_rate ~ 1,
+                   family = "gaussian",
+                   time_trend = 0:2,
+                   lag = 0:1,
+                   diff_k = 0:1,
+                   log = c(FALSE, TRUE))
+
+models
+```
+
+Fit models to validation data to get BMA weights
+
+```{r}
+fits <- eepd_pre(models, data = ptpdata,
+                 group_var = "group",
+                 time_var = "year",
+                 unit_var = "state",
+                 val_times = 1999:2007,
+                 nsim = 500,
+                 cl = 3)
+
+fits
+```
+
+Summarize fits
+
+```{r}
+summary(fits)
+
+summary(fits, order = "errors")
+
+summary(fits, order = "weights")
+```
+
+Plot weights and errors
+
+```{r}
+plot(fits, type = "weights")
+
+plot(fits, type = "errors", ncol = 4)
+```
+
+Estimate ATT
+
+```{r}
+est <- eepd_est(fits, post_time = 2008,
+                M = 1, R = 500,
+                cl = 3)
+
+est
+
+# ATT and 95% CI
+summary(est, level = .95, M = 0)
+
+# ATT and M = 1 robustness bounds with no ucnertainty
+summary(est, level = 0, M = 1)
+
+# ATT and M = 1 robustness bounds with ucnertainty
+summary(est, level = .95, M = 1)
+
+plot(est)
+```
+
+Changepoint
+
+```{r}
+# Robustness changepoint, no uncertainty
+(m <- robustness_bound(est, level = 0))
+
+summary(est, level = 0, M = m)
+
+# Robustness changepoint with uncertainty
+(m <- robustness_bound(est, level = .95))
+
+summary(est, level = .95, M = m)
+```
+

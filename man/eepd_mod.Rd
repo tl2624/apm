@@ -10,6 +10,7 @@ eepd_mod(
   lag = 0,
   diff_k = 0,
   log = FALSE,
+  time_trend = 0,
   fixef = FALSE,
   identiy_only_log = TRUE
 )
@@ -17,38 +18,41 @@ eepd_mod(
 \arguments{
 \item{formula_list}{a list of model formulas with the outcome on the left side and predictions (or just an intercept) on the right side.}
 
-\item{family}{a list of family specifications; see \code{\link[=family]{family()}} for allowable options. These iwll eventually be passed to \code{\link[=glm]{glm()}} when fitting the models in \code{\link[=eepd_fit]{eepd_fit()}}, \code{\link[=eepd_sim]{eepd_sim()}}, or \code{\link[=eepd_boot]{eepd_boot()}}. \code{"negbin"} can also be supplied to request a negative binomial model fit using \code{\link[MASS:glm.nb]{MASS::glm.nb()}}. Default is \code{"gaussian"} to specify a linear model.}
+\item{family}{a list of family specifications; see \code{\link[=family]{family()}} for allowable options. These will eventually be passed to \code{\link[=glm]{glm()}} when fitting the models in \code{\link[=eepd_pre]{eepd_pre()}}. \code{"negbin"} can also be supplied to request a negative binomial model with a log link fit using \code{\link[MASS:glm.nb]{MASS::glm.nb()}}. Default is \code{"gaussian"} to specify a linear model.}
 
 \item{lag}{a vector of integers indicating the desired outcome lags to be used as predictors. For example, a \code{lag} value of 3 means the outcome lagged once, twice, and three times will be included as predictors. Default is 0 for no lags.}
 
-\item{diff_k}{a vector of integers indicating the desired outcome lag to be used a an offset For example, a \code{diff_k} value of 3 means the third lag of the outcome will be included as an offset, equivalent to using the outcome minus its corresponding lag as the outcome of the corresponding model. Default is 0 for no lags. Any models with a \code{diff_k} value less than a \code{lag} value will be removed automatically.}
+\item{diff_k}{a vector of integers indicating the desired outcome lag to be used a an offset For example, a \code{diff_k} value of 1 means the prior time point's outcome will be included as an offset, equivalent to using the outcome minus its corresponding lag as the outcome of the corresponding model. Default is 0 for no lags. Any models with a \code{diff_k} value less than a \code{lag} value will be removed automatically. When used with a family with a log link, the lags are automatically log-transformed; an error will be thrown by \code{eepd_pre()} if nonpositive values are present in the outcome.}
 
-\item{log}{a logical vector indicating whether the outcome should be logged. Default is \code{FALSE} to use the original outcome.}
+\item{log}{a logical vector indicating whether the outcome should be log-transformed. Default is \code{FALSE} to use the original outcome. When \code{lag} or \code{diff_k} are greater than 0, the outcome lags will also be log-transformed if \code{TRUE}. When the family has a log link and \code{diff_k} is greater than zero, the lag in the offset will be log transformed.}
+
+\item{time_trend}{a vector of integers indicating the desired powers to be included in a time trend. For example, a \code{time_trend} value of 2 means the time variable and its square will be included as predictors in the model. A value of 0 (the default) means time is not included as a predictor.}
 
 \item{fixef}{a logical vector indicating whether unit fixed effects should be included as predictors. Default is \code{FALSE} to omit unit fixed effects.}
 
 \item{identiy_only_log}{\code{logical}; whether to omit any models in which \code{log} is \code{TRUE} but the link in the \code{family} specification corresponds to something other than \code{"identity"}. Default is \code{TRUE}, and this should probably not be changed.}
 }
 \value{
-An \code{eepd_models} object, which is a list containing the full cross (less any omitted combinations) of the model features specified in the arguments. These have a \code{print()} method and can be combined using \code{c()}.
+An \code{eepd_models} object, which is a list containing the full cross (less any omitted combinations) of the model features specified in the arguments, with each combination a list. These have a \code{print()} method and can be combined using \code{c()}. Each model is named automatically, but these can be set manually using \code{\link[=names]{names()}} as well. Models can be removed by setting their value to \code{NULL}; see Examples.
 }
 \description{
-\code{eepd_mod()} generates a list of models characterized by a basic model formulas and other options (e.g., lags, families, etc.) that are supplied to \code{\link[=eepd_fit]{eepd_fit()}}, \code{\link[=eepd_sim]{eepd_sim()}}, or \code{\link[=eepd_boot]{eepd_boot()}}. These values are completely crossed to create a grid of model specifications, and multiple sets of model specifications can be combined using \code{c()} (see Examples).
+\code{eepd_mod()} generates a list of models characterized by a basic model formulas and other options (e.g., lags, families, etc.) that are supplied to \code{\link[=eepd_pre]{eepd_pre()}}. These values are completely crossed to create a grid of model specifications, and multiple sets of model specifications can be combined using \code{c()} (see Examples).
 }
 \examples{
 data("ptpdata")
 
-# Combination of 8 models: 2 baseline formulas,
-# 2 families, 2 lags
-models1 <- eepd_mod(list(crude_rate ~ 1,
-                         crude_rate ~ year),
+# Combination of 8 models: 1 baseline formulas,
+# 2 families, 2 lags, 2 time trends
+models1 <- eepd_mod(crude_rate ~ 1,
                     family = list("gaussian", "quasipoisson"),
+                    time_trend = 0:1,
                     lag = 0:1, fixef = TRUE)
 models1
 
 # Add a single other model with a square time trend
-models2 <- eepd_mod(crude_rate ~ poly(year, 2),
+models2 <- eepd_mod(crude_rate ~ 1,
                     family = "gaussian",
+                    time_trend = 2,
                     fixef = FALSE)
 models2
 
