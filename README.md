@@ -1,26 +1,26 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# eepd
+# apm
 
 <!-- badges: start -->
 <!-- badges: end -->
 
 ``` r
-library(eepd)
+library(apm)
 data("ptpdata")
 ```
 
 ## Supplying models
 
-We can specify the models to test using `eepd_mod()`. This create a full
+We can specify the models to test using `apm_mod()`. This create a full
 cross of all supplied arguments, which include model formula, families,
 whether the outcome is logged or not, whether fixed effects are included
 or not, whether the outcome should be a difference, and whether outcome
 lags should appear as predictors. Below, we create a cross of 9 models.
 
 ``` r
-models <- eepd_mod(deaths ~ 1,
+models <- apm_mod(deaths ~ 1,
                    family = list("gaussian", "quasipoisson"),
                    log = c(TRUE, FALSE),
                    lag = 0, diff_k = 0, 
@@ -116,7 +116,7 @@ other models, we can so by creating a new models object and appending it
 to the current one.
 
 ``` r
-models2 <- eepd_mod(list(deaths ~ 1),
+models2 <- apm_mod(list(deaths ~ 1),
                     diff_k = 1)
 
 models <- c(models, models2)
@@ -224,11 +224,11 @@ can use the full joint distribution of model parameter estimates. For
 each validation time, each model is fit using a dataset that contains
 data points prior to that time.
 
-We use `eepd_fit()` to fit the models, and calculate the prediction
+We use `apm_fit()` to fit the models, and calculate the prediction
 errors and BMA weights.
 
 ``` r
-fits <- eepd_pre(models,
+fits <- apm_pre(models,
                  data = ptpdata,
                  group_var = "group",
                  time_var = "year",
@@ -239,7 +239,7 @@ fits <- eepd_pre(models,
 #> Done.
 
 fits
-#> An `eepd_pre_fits` object
+#> An `apm_pre_fits` object
 #> 
 #>  - grouping variable: group
 #>  - unit variable: state
@@ -253,18 +253,18 @@ fits
 
 ## Computing the ATT
 
-We compute the ATT using `eepd_est()`, which uses bootstrapping to
+We compute the ATT using `apm_est()`, which uses bootstrapping to
 compute model uncertainty due to sampling along with uncertainty due to
 model selection.
 
 ``` r
-est <- eepd_est(fits,
+est <- apm_est(fits,
                 post_time = 2008,
                 M = 1,
                 R = 50)
 
 est
-#> An `eepd_est` object
+#> An `apm_est` object
 #> 
 #>  - grouping variable: group
 #>  - unit variable: state
@@ -278,6 +278,6 @@ est
 
 summary(est)
 #>       Estimate Std. Error  CI low CI high z_value Pr(>|z|)
-#> ATT      62.00      40.45  -17.28  141.28   1.533    0.125
-#> M = 1        .          . -116.69  181.35       .        .
+#> ATT      61.64      39.39  -15.57  138.85   1.565    0.118
+#> M = 1        .          . -113.22  179.67       .        .
 ```

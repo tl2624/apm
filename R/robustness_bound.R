@@ -2,26 +2,26 @@
 #' 
 #' @description `robustness_bound()` computes the value of the sensitivity parameter M at which the robustness bounds change from excluding to including an ATT of 0.
 #' 
-#' @param object an `eepd_est` object; the output of a call to [eepd_est()]. `M` must have been set to a nonzero value to use `robustness_bound()`.
+#' @param object an `apm_est` object; the output of a call to [apm_est()]. `M` must have been set to a nonzero value to use `robustness_bound()`.
 #' @param level the desired confidence level. Set to 0 to ignore sampling variation in computing the interval bounds. Default is .95.
 #' 
 #' @returns
 #' A single number corresponding to the changepoint value of M. If there is no positive value of M for which the interval bounds cross 0, `NA` will be returned.
 #' 
-#' @seealso [summary.eepd_est()] for examining the ATT and bounds for a given value of `M`; [uniroot()] for the function that finds the changepoint value of `M`.
+#' @seealso [summary.apm_est()] for examining the ATT and bounds for a given value of `M`; [uniroot()] for the function that finds the changepoint value of `M`.
 #' 
 #' @examples 
 #' data("ptpdata")
 #' 
 #' # Combination of 4 models: 2 time trends, 2 lags
-#' models <- eepd_mod(list(crude_rate ~ 1),
+#' models <- apm_mod(list(crude_rate ~ 1),
 #'                    lag = 0:1,
 #'                    time_trend = 0:1)
 #' models
 #' 
 #' # Fit the models to data; unit_var must be supplied for
 #' # fixed effects
-#' fits <- eepd_pre(models,
+#' fits <- apm_pre(models,
 #'                  data = ptpdata,
 #'                  group_var = "group",
 #'                  time_var = "year",
@@ -29,7 +29,7 @@
 #'                  unit_var = "state",
 #'                  nsim = 100)
 #' 
-#' est <- eepd_est(fits,
+#' est <- apm_est(fits,
 #'                 post_time = 2008,
 #'                 M = 1,
 #'                 R = 20)
@@ -51,14 +51,14 @@
 
 #' @export
 robustness_bound <- function(object, level = .95) {
-  chk::chk_is(object, "eepd_est")
+  chk::chk_is(object, "apm_est")
   
   chk::chk_number(level)
   chk::chk_gte(level, 0)
   chk::chk_lt(level, 1)
   
   if (object[["M"]] == 0) {
-    chk::err("`robustness_bound()` cannot be used when `M` was 0 in the call to `eepd_est()`")
+    chk::err("`robustness_bound()` cannot be used when `M` was 0 in the call to `apm_est()`")
   }
   
   att_inds <- seq_along(object[["BMA_weights"]])

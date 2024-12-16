@@ -13,22 +13,22 @@ knitr::opts_chunk$set(
 )
 ```
 
-# eepd
+# apm
 
 <!-- badges: start -->
 <!-- badges: end -->
 
 ```{r setup}
-library(eepd)
+library(apm)
 data("ptpdata")
 ```
 
 ## Supplying models
 
-We can specify the models to test using `eepd_mod()`. This create a full cross of all supplied arguments, which include model formula, families, whether the outcome is logged or not, whether fixed effects are included or not, whether the outcome should be a difference, and whether outcome lags should appear as predictors. Below, we create a cross of 9 models.
+We can specify the models to test using `apm_mod()`. This create a full cross of all supplied arguments, which include model formula, families, whether the outcome is logged or not, whether fixed effects are included or not, whether the outcome should be a difference, and whether outcome lags should appear as predictors. Below, we create a cross of 9 models.
 
 ```{r}
-models <- eepd_mod(deaths ~ 1,
+models <- apm_mod(deaths ~ 1,
                    family = list("gaussian", "quasipoisson"),
                    log = c(TRUE, FALSE),
                    lag = 0, diff_k = 0, 
@@ -40,7 +40,7 @@ models
 Normally, this cross would yield 12 = 3 (formulas) x 2 (families) x 2 (log T/F), but by default any models with non-linear links and `log = TRUE` are removed, leaving 9 models. If we want to manually add other models, we can so by creating a new models object and appending it to the current one.
 
 ```{r}
-models2 <- eepd_mod(list(deaths ~ 1),
+models2 <- apm_mod(list(deaths ~ 1),
                     diff_k = 1)
 
 models <- c(models, models2)
@@ -54,10 +54,10 @@ This leaves us with 10 models.
 
 Next we fit all 10 models to the data. We do so once for each validation time to compute the average prediction error that will be used to select the optimal model. All models are fit simultaneously so the simulation can use the full joint distribution of model parameter estimates. For each validation time, each model is fit using a dataset that contains data points prior to that time.
 
-We use `eepd_fit()` to fit the models, and calculate the prediction errors and BMA weights.
+We use `apm_fit()` to fit the models, and calculate the prediction errors and BMA weights.
 
 ```{r}
-fits <- eepd_pre(models,
+fits <- apm_pre(models,
                  data = ptpdata,
                  group_var = "group",
                  time_var = "year",
@@ -69,10 +69,10 @@ fits
 
 ## Computing the ATT
 
-We compute the ATT using `eepd_est()`, which uses bootstrapping to compute model uncertainty due to sampling along with uncertainty due to model selection.
+We compute the ATT using `apm_est()`, which uses bootstrapping to compute model uncertainty due to sampling along with uncertainty due to model selection.
 
 ```{r}
-est <- eepd_est(fits,
+est <- apm_est(fits,
                 post_time = 2008,
                 M = 1,
                 R = 50)

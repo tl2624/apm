@@ -1,5 +1,5 @@
 ---
-title: "eepd Demo"
+title: "apm Demo"
 author: "Noah Greifer"
 date: "`r Sys.Date()`"
 vignette: >
@@ -13,14 +13,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-library(eepd)
+library(apm)
 data("ptpdata")
 ```
 
 Specify models
 
 ```{r}
-models <- eepd_mod(crude_rate ~ 1,
+models <- apm_mod(crude_rate ~ 1,
                    family = "gaussian",
                    time_trend = 0:2,
                    lag = 0:1,
@@ -33,7 +33,7 @@ models
 Fit models to validation data to get BMA weights
 
 ```{r}
-fits <- eepd_pre(models, data = ptpdata,
+fits <- apm_pre(models, data = ptpdata,
                  group_var = "group",
                  time_var = "year",
                  unit_var = "state",
@@ -65,7 +65,7 @@ plot(fits, type = "errors", ncol = 4)
 Estimate ATT
 
 ```{r}
-est <- eepd_est(fits, post_time = 2008,
+est <- apm_est(fits, post_time = 2008,
                 M = 1, R = 500,
                 cl = 3)
 

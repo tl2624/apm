@@ -1,20 +1,20 @@
 #' Estimate ATTS from models fits
 #' 
-#' @description `eepd_est()` computes the ATTs from the models previously fit by [eepd_pre()], choosing the optimal one by minimizing the largest absolute average prediction error across validation times. Optionally, this process can be simulated to arrive at a distribution of ATTs that accounts for the uncertainty in selecting the optimal model. `plot()` plots the resulting ATT(s).
+#' @description `apm_est()` computes the ATTs from the models previously fit by [apm_pre()], choosing the optimal one by minimizing the largest absolute average prediction error across validation times. Optionally, this process can be simulated to arrive at a distribution of ATTs that accounts for the uncertainty in selecting the optimal model. `plot()` plots the resulting ATT(s).
 #' 
-#' @inheritParams eepd_pre
-#' @param fits an `eepd_pre_fits` object; the output of a call to [eepd_pre()].
+#' @inheritParams apm_pre
+#' @param fits an `apm_pre_fits` object; the output of a call to [apm_pre()].
 #' @param post_time the value of the time variable considered post-treatment, for which the ATT is to be estimated.
-#' @param M the sensitivity parameter for set identification. For `eepd_est()`, the default is 0, i.e., under point identification. For `summary()`, this can be set to one or more positive values to produce uncertainty bounds for each value. Only allowed when not set to 0 in the call to `eepd_est()`. See Details.
+#' @param M the sensitivity parameter for set identification. For `apm_est()`, the default is 0, i.e., under point identification. For `summary()`, this can be set to one or more positive values to produce uncertainty bounds for each value. Only allowed when not set to 0 in the call to `apm_est()`. See Details.
 #' @param R the number of bootstrap iterations used to compute the sampling variance of the ATT. Default is 1000. More is better but takes longer.
 #' @param all_models `logical`; whether to compute ATTs for all models (`TRUE`) or just those with BMA weights greater than 0 (`FALSE`, default). This will not effect the final estimates but leaving as `FALSE` can speed up computation when some models have BMA weights of 0.
-#' @param x,object an `eepd_est` object; the output of a call to `eepd_est()`.
+#' @param x,object an `apm_est` object; the output of a call to `apm_est()`.
 #' @param level the desired confidence level. Set to 0 to ignore sampling variation in computing the interval bounds. Default is .95.
 #' @param label `logical`; whether to label the ATT estimates. Requires \pkg{ggrepel} to be installed. Default is `TRUE`.
 #' @param size.weights `logicsl`; whether to size the points based on their BMA weights. Default is `TRUE`.
 #' 
 #' @returns
-#' `eepd_est()` returns an `eepd_est` object, which contains the ATT estimates and their variance estimates. The following components are included:
+#' `apm_est()` returns an `apm_est` object, which contains the ATT estimates and their variance estimates. The following components are included:
 #' \describe{
 #' \item{BMA_att}{the BMA-weighted ATT}
 #' \item{atts}{a matrix containing the ATT estimates from each model (when `all_models = FALSE`, only models with positive BMA weights are included)}
@@ -24,7 +24,7 @@
 #' \item{M}{the value of the sensitivity parameter `M`}
 #' \item{post_time}{the value supplied to `post_time`}
 #' \item{pred_errors}{a matrix containing the difference in average prediction errors for each model and each pre-treatment validation period}
-#' \item{BMA_weights}{the BMA weights computed by `eepd_pre()` (when `all_models = FALSE`, only positive BMA weights are included)}
+#' \item{BMA_weights}{the BMA weights computed by `apm_pre()` (when `all_models = FALSE`, only positive BMA weights are included)}
 #' \item{boot_out}{an `fwb` object containing the bootstrap results}
 #' }
 #' 
@@ -33,27 +33,27 @@
 #' `summary()` produces a table with the BMA-weighted ATT, it's estimated standard error, and confidence interval limits. When `M` is greater than 0, additional rows for each value of `M` are included with the lower and upper bound. When `level` is greater than 0, these bounds include the uncertainty due to sampling and model selection; otherwise, they correspond to the set identification bounds for the ATT.
 #' 
 #' @details
-#' `eepd_est()` estimates the ATT from each model and combines them to form the BMA-weighted estimate of the ATT. Uncertainty for the BMA-weighted ATT is computed by combining two variance components, one that account for sampling and another that accounts for model selection. The component due to sampling is computed by bootstrapping the process of fitting the outcome model for the post-treatment outcome identified by `post_time` and computing the difference between the observed outcome mean difference and the model-predicted outcome mean difference. The fractional weighted bootstrap as implemented in [fwb::fwb()] is used to ensure no units are dropped from the analysis. In each bootstrap sample, the BMA-weighted ATT estimate is computed as the weighted average of the ATTs computed from the models using the fixed BMA weights computed by [eepd_pre()], and the variance is computed as the empirical variance over the bootstrapped estimates. The variance component due to model selection is computed as the BMA-weighted variance of the original ATTs.
+#' `apm_est()` estimates the ATT from each model and combines them to form the BMA-weighted estimate of the ATT. Uncertainty for the BMA-weighted ATT is computed by combining two variance components, one that account for sampling and another that accounts for model selection. The component due to sampling is computed by bootstrapping the process of fitting the outcome model for the post-treatment outcome identified by `post_time` and computing the difference between the observed outcome mean difference and the model-predicted outcome mean difference. The fractional weighted bootstrap as implemented in [fwb::fwb()] is used to ensure no units are dropped from the analysis. In each bootstrap sample, the BMA-weighted ATT estimate is computed as the weighted average of the ATTs computed from the models using the fixed BMA weights computed by [apm_pre()], and the variance is computed as the empirical variance over the bootstrapped estimates. The variance component due to model selection is computed as the BMA-weighted variance of the original ATTs.
 #' 
 #' When `M` is greater than 0, bounds for set identification and their uncertainty are additionally computed. This involves bootstrapping the fitting of the pre-period models along with post-treatment models on order to compute the maximum absolute difference in average prediction errors for each model across validation periods. Each bootstrap sample produces a margin of error for each model computed as \eqn{M \times \delta_m} where \eqn{\delta_m} is the maximum absolute difference in average prediction errors for model \eqn{m}. Upper and lower bounds for the set-identified BMA-weighted ATT are computed as \eqn{\text{ATT}_m \pm M \times \delta_m}. The same procedure as above is then used to compute the variance of these bounds.
 #' 
 #' `summary()` displays the BMA-weighted ATT estimate, its standard error, and Wald confidence intervals. When `M` is greater than 0, bounds for the set-identified ATT are displayed in the confidence interval bound columns. The lower bound is computed as \eqn{\text{LB} - \sigma_{LB}Z_{l}} and the upper bound as \eqn{\text{UB} + \sigma_{UB}Z_{l}}, where \eqn{\text{LB}} and \eqn{\text{UB}} are the lower and upper bounds, \eqn{\sigma_{LB}} and \eqn{\sigma_{UB}} are their variances accounting for sampling and model selection, and \eqn{Z_{l}} is the critical Z-statistic for confidence level \eqn{l}. To display the set-identification bounds themselves, one should set `level = 0`.
 #' 
-#' @seealso [eepd_pre()] for computing the BMA weights; [fwb::fwb()] for the fractional weighted bootstrap.
+#' @seealso [apm_pre()] for computing the BMA weights; [fwb::fwb()] for the fractional weighted bootstrap.
 #' 
 #' 
 #' @examples 
 #' data("ptpdata")
 #' 
 #' # Combination of 4 models: 2 time trends, 2 lags
-#' models <- eepd_mod(list(crude_rate ~ 1),
+#' models <- apm_mod(list(crude_rate ~ 1),
 #'                    lag = 0:1,
 #'                    time_trend = 0:1)
 #' models
 #' 
 #' # Fit the models to data; unit_var must be supplied for
 #' # fixed effects
-#' fits <- eepd_pre(models,
+#' fits <- apm_pre(models,
 #'                  data = ptpdata,
 #'                  group_var = "group",
 #'                  time_var = "year",
@@ -61,7 +61,7 @@
 #'                  unit_var = "state",
 #'                  nsim = 100)
 #' 
-#' est <- eepd_est(fits,
+#' est <- apm_est(fits,
 #'                 post_time = 2008,
 #'                 M = 1,
 #'                 R = 20)
@@ -80,8 +80,8 @@
 #' plot(est)
 
 #' @export
-eepd_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = NULL, verbose = TRUE, ...) {
-  chk::chk_is(fits, "eepd_pre_fits")
+apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = NULL, verbose = TRUE, ...) {
+  chk::chk_is(fits, "apm_pre_fits")
   
   time_var <- attr(fits, "time_var")
   data <- fits$data
@@ -286,14 +286,14 @@ eepd_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl =
   attr(out, "unit_var") <- unit_var
   attr(out, "group_var") <- group_var
   
-  class(out) <- "eepd_est"
+  class(out) <- "apm_est"
   
   out
 }
 
-#' @exportS3Method print eepd_est
-print.eepd_est <- function(x, ...) {
-  cat("An `eepd_est` object\n")
+#' @exportS3Method print apm_est
+print.apm_est <- function(x, ...) {
+  cat("An `apm_est` object\n")
   cat("\n")
   cat(sprintf(" - grouping variable: %s\n", attr(x, "group_var")))
   cat(sprintf(" - unit variable: %s\n", attr(x, "unit_var")))
@@ -308,9 +308,9 @@ print.eepd_est <- function(x, ...) {
   invisible(x)
 }
 
-#' @exportS3Method summary eepd_est
-#' @rdname eepd_est
-summary.eepd_est <- function(object, level = .95, M = NULL, ...) {
+#' @exportS3Method summary apm_est
+#' @rdname apm_est
+summary.apm_est <- function(object, level = .95, M = NULL, ...) {
   
   res <- data.frame(
     object[["BMA_att"]]["ATT"],
@@ -339,7 +339,7 @@ summary.eepd_est <- function(object, level = .95, M = NULL, ...) {
   
   if (length(M) > 0) {
     if (object[["M"]] == 0) {
-      chk::err("`M` cannot be nonzero when `M` was 0 in the call to `eepd_est()`")
+      chk::err("`M` cannot be nonzero when `M` was 0 in the call to `apm_est()`")
     }
     
     res2 <- do.call("rbind", lapply(M, function(m) {
@@ -396,13 +396,13 @@ summary.eepd_est <- function(object, level = .95, M = NULL, ...) {
     res <- rbind(res, res2)
   }
   
-  class(res) <- c("summary.eepd_est", class(res))
+  class(res) <- c("summary.apm_est", class(res))
   
   res
 }
 
-#' @exportS3Method print summary.eepd_est
-print.summary.eepd_est <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+#' @exportS3Method print summary.apm_est
+print.summary.apm_est <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   printCoefmat(x, digits = digits, cs.ind = 1:4,
                tst.ind = 5,
                P.values = TRUE,
@@ -413,9 +413,9 @@ print.summary.eepd_est <- function(x, digits = max(3, getOption("digits") - 3), 
   invisible(x)
 }
 
-#' @exportS3Method plot eepd_est
-#' @rdname eepd_est
-plot.eepd_est <- function(x, label = TRUE, size.weights = TRUE, ...) {
+#' @exportS3Method plot apm_est
+#' @rdname apm_est
+plot.apm_est <- function(x, label = TRUE, size.weights = TRUE, ...) {
   chk::chk_flag(label)
 
   max_abs_pred_error <- apply(abs(x[["pred_errors"]]), 2, max)

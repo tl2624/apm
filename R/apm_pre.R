@@ -1,8 +1,8 @@
 #' Fit validation models to pre-treatment data
 #' 
-#' @description `eepd_pre()` fits models to the pre-treatment data to compute the observed prediction errors for each model in each period and compute the Bayesian model averaging (BMA) weights eventually used in [eepd_est()] to estimate the treatment effect.
+#' @description `apm_pre()` fits models to the pre-treatment data to compute the observed prediction errors for each model in each period and compute the Bayesian model averaging (BMA) weights eventually used in [apm_est()] to estimate the treatment effect.
 #' 
-#' @param models an `eepd_models` object; the output of a call to [eepd_mod()].
+#' @param models an `apm_models` object; the output of a call to [apm_mod()].
 #' @param data a dataset containing all the variables named in the supplied models (i.e., the outcome and any predictors) as well as any variable named below.
 #' @param weights an optional vector of weights (e.g., sampling weights) used to fit weighted regression models.
 #' @param group_var string; the name of the treatment variable in `data` defining the "to be treated" and "not to be treated" groups. The corresponding variable should take on values of 0 and 1 only.
@@ -12,37 +12,37 @@
 #' @param nsim the number of simulated draws from the joint posterior of the fitted models to use to compute the BMA weights. Default is 1000. More is better but takes longer.
 #' @param cl a cluster object created by [parallel::makeCluster()], or an integer to indicate number of child-processes (integer values are ignored on Windows) for parallel evaluations. It can also be `"future"` to use a future backend. `NULL` (default) refers to sequential evaluation. See the `cl` argument of [pbapply::pblapply()] for details.
 #' @param verbose `logical`; whether to print information about the progress of the estimation, including a progress bar. Default is `TRUE`.
-#' @param object an `eepd_pre_fit` object; the output of a call to `eepd_pre()`.
-#' @param order how to order the summary; `NULL` (the default) is the same ordering as the models supplied to `eepd_pre()`, `"weights"` orders the models by their computed BMA weights with the highest weights on top, and `"errors"` orders the models by their maximum absolute difference in prediction errors with the smallest errors on top.
+#' @param object an `apm_pre_fit` object; the output of a call to `apm_pre()`.
+#' @param order how to order the summary; `NULL` (the default) is the same ordering as the models supplied to `apm_pre()`, `"weights"` orders the models by their computed BMA weights with the highest weights on top, and `"errors"` orders the models by their maximum absolute difference in prediction errors with the smallest errors on top.
 #' @param \dots ignored.
 #' 
 #' @returns
-#' `eepd_pre()` returns an `eepd_pre_fits` object, which is a list containing the models supplied to `models`, a grid of all fitted models, a list of all model fit objects, a list of all estimated coefficients, the joint covariance of the coefficients, the dataset supplied to `data`, and other components supplied to `eepd_pre()`.
+#' `apm_pre()` returns an `apm_pre_fits` object, which is a list containing the models supplied to `models`, a grid of all fitted models, a list of all model fit objects, a list of all estimated coefficients, the joint covariance of the coefficients, the dataset supplied to `data`, and other components supplied to `apm_pre()`.
 #' 
 #' `summary()` produces a data frame containing the BMA weights and maximum absolute difference in mean prediction errors for each model, ordered according `order`. An asterisk appears next to the model with the smallest error.
 #' 
 #' @details
-#' `eepd_pre()` creates a grid of all models and all time points and fits all corresponding models. For each validation time supplied to `val_times`, each model is fit using all previous times. For example, for a validation time of 5, a model is fit with data only from periods 1-4.
+#' `apm_pre()` creates a grid of all models and all time points and fits all corresponding models. For each validation time supplied to `val_times`, each model is fit using all previous times. For example, for a validation time of 5, a model is fit with data only from periods 1-4.
 #' 
 #' [lm()], [glm()], or [MASS::glm.nb()] are used to fit the given models. The joint covariance matrix of all the coefficients is computed using the SUEST method described in Mize et al. (2019, p164), which is also used by the STATA command `suest`. This is equivalent to the covariance matrix computed by stacking the score equations for the models and fitting them using M-estimation and yields the equivalent of the HC0 covariance matrix for all within-model covariances. The covariance is clustered by `unit_id`.
 #' 
 #' To compute the BMA weights, random variate drawn from a multivariate normal distribution `nsim` times with mean vector equal to the concatenated model coefficients and covariance equal to the joint covariance matrix described above. For each iteration, the absolute average prediction errors are calculated for each model and validation period. A model is considered the "winner" if it its largest absolute average prediction error across validation periods is the smallest among all models. The BMA weight for each model is equal to the proportion of iterations in which that model was the "winner".
 #' 
-#' @seealso [lm()],[glm()], and [MASS::glm.nb()] for the functions used to fit the models; [eepd_est()] to compute the ATT and its uncertainty; [plot.eepd_pre_fits()] for plotting an `eepd_pre_fits` object.
+#' @seealso [lm()],[glm()], and [MASS::glm.nb()] for the functions used to fit the models; [apm_est()] to compute the ATT and its uncertainty; [plot.apm_pre_fits()] for plotting an `apm_pre_fits` object.
 #' 
 #' @examples 
 #' data("ptpdata")
 #' 
 #' # Combination of 8 models: 2 baseline formulas,
 #' # 2 families, 2 lags
-#' models <- eepd_mod(crude_rate ~ 1,
+#' models <- apm_mod(crude_rate ~ 1,
 #'                    family = list("gaussian", "quasipoisson"),
 #'                    time_trend = 0:1,
 #'                    lag = 0:1)
 #' models
 #' 
 #' # Fit the models to data
-#' fits <- eepd_pre(models, data = ptpdata,
+#' fits <- apm_pre(models, data = ptpdata,
 #'                  group_var = "group",
 #'                  time_var = "year",
 #'                  val_times = 1999:2007,
@@ -57,13 +57,13 @@
 #' plot(fits, type = "error")
 
 #' @export 
-eepd_pre <- function(models, data, weights = NULL, group_var, time_var,
+apm_pre <- function(models, data, weights = NULL, group_var, time_var,
                      val_times, unit_var, nsim = 1000, cl = NULL,
                      verbose = TRUE) {
   
   # Argument checks
   chk::chk_not_missing(models, "`models`")
-  chk::chk_is(models, "eepd_models")
+  chk::chk_is(models, "apm_models")
   
   chk::chk_not_missing(data, "`data`")
   chk::chk_data(data)
@@ -138,7 +138,7 @@ eepd_pre <- function(models, data, weights = NULL, group_var, time_var,
   #Fit all estimates
   val_data <- val_weights <- val_fits <- val_coefs <- observed_val_means <- vector("list", nrow(grid))
   
-  eepd_mat <- mat0 <- matrix(NA_real_,
+  apm_mat <- mat0 <- matrix(NA_real_,
                              nrow = length(val_times),
                              ncol = length(models),
                              dimnames = list(val_times,
@@ -208,7 +208,7 @@ eepd_pre <- function(models, data, weights = NULL, group_var, time_var,
       pred_error <- (observed_val_means[[f]]["1"] - observed_val_means[[f]]["0"]) -
         (predicted_val_means_i["1"] - predicted_val_means_i["0"])
       
-      eepd_mat[t, i] <- pred_error
+      apm_mat[t, i] <- pred_error
       
       val_fits[[f]] <- fit
       
@@ -300,7 +300,7 @@ eepd_pre <- function(models, data, weights = NULL, group_var, time_var,
                val_vcov = val_vcov,
                data = data,
                weights = weights,
-               pred_errors = eepd_mat,
+               pred_errors = apm_mat,
                BMA_weights = BMA_weights,
                nsim = nsim)
   
@@ -308,14 +308,14 @@ eepd_pre <- function(models, data, weights = NULL, group_var, time_var,
   attr(fits, "unit_var") <- unit_var
   attr(fits, "group_var") <- group_var
   
-  class(fits) <- "eepd_pre_fits"
+  class(fits) <- "apm_pre_fits"
   
   fits
 }
 
-#' @exportS3Method print eepd_pre_fits
-print.eepd_pre_fits <- function(x, ...) {
-  cat("An `eepd_pre_fits` object\n")
+#' @exportS3Method print apm_pre_fits
+print.apm_pre_fits <- function(x, ...) {
+  cat("An `apm_pre_fits` object\n")
   cat("\n")
   cat(sprintf(" - grouping variable: %s\n", attr(x, "group_var")))
   cat(sprintf(" - unit variable: %s\n", attr(x, "unit_var")))
@@ -327,9 +327,9 @@ print.eepd_pre_fits <- function(x, ...) {
   cat("Use `summary()` or `plot()` to examine prediction errors and BMA weights.\n")
 }
 
-#' @rdname eepd_pre
-#' @exportS3Method summary eepd_pre_fits
-summary.eepd_pre_fits <- function(object, order = NULL, ...) {
+#' @rdname apm_pre
+#' @exportS3Method summary apm_pre_fits
+summary.apm_pre_fits <- function(object, order = NULL, ...) {
   out <- data.frame(bma = object$BMA_weights,
                     err = apply(abs(object[["pred_errors"]]), 2, max),
                     row.names = names(object$models))
@@ -348,13 +348,13 @@ summary.eepd_pre_fits <- function(object, order = NULL, ...) {
     }
   }
   
-  class(out) <- c("summary.eepd_pre_fits", class(out))
+  class(out) <- c("summary.apm_pre_fits", class(out))
   
   out
 }
 
-#' @exportS3Method print summary.eepd_pre_fits
-print.summary.eepd_pre_fits <- function(x, digits = 3, ...) {
+#' @exportS3Method print summary.apm_pre_fits
+print.summary.apm_pre_fits <- function(x, digits = 3, ...) {
   out <- matrix(NA_character_, nrow = nrow(x),
                 ncol = ncol(x) + 1,
                 dimnames = list(rownames(x),

@@ -1,8 +1,8 @@
-#' @title Plot outputs of `eepd_pre()`
+#' @title Plot outputs of `apm_pre()`
 #' 
-#' @description `plot()` displays the Bayesian model averaging (BMA) weights for each model (computed by `eepd_fit()` as the posterior probability of selection) and the distribution of the difference in average prediction errors.
+#' @description `plot()` displays the Bayesian model averaging (BMA) weights for each model (computed by `apm_fit()` as the posterior probability of selection) and the distribution of the difference in average prediction errors.
 #' 
-#' @param x an `eepd_pre_fits` object; the output of a call to [eepd_pre()].
+#' @param x an `apm_pre_fits` object; the output of a call to [apm_pre()].
 #' @param type which values to plot: allowable options include `"weights"` to plot the BMA weights/posterior probabilities (default) and `"errors"` to plot the difference in average predictions errors for all models across validation periods. Abbreviations allowed.
 #' @param abs `logical`; when `type = "errors"`, whether to plot the differences in average prediction errors in absolute value (`TRUE`, default) or not (`FALSE`). 
 #' @param ncol when `type = "errors"`, the number of columns to use to display the plots. Default is 4.
@@ -17,14 +17,14 @@
 #' 
 #' When `type = "errors"`, `plot()` displays a lattice of bar plots, with a plot for each model displaying the difference in average prediction errors for each validation period. The period with the largest difference in average prediction errors will be shaded black. The model with the smallest maximum absolute difference in average prediction errors will have a gray label.
 #' 
-#' @seealso [eepd_pre()] to to compute the difference in average prediction errors and BMA weights; `ggplot2::geom_col()`, which is used to create the plots.
+#' @seealso [apm_pre()] to to compute the difference in average prediction errors and BMA weights; `ggplot2::geom_col()`, which is used to create the plots.
 #' 
 #' @examples 
 #' data("ptpdata")
 #' 
 #' # Combination of 8 models: 2 baseline formulas,
 #' # 2 families, 2 lags
-#' models <- eepd_mod(crude_rate ~ 1,
+#' models <- apm_mod(crude_rate ~ 1,
 #'                    family = "gaussian",
 #'                    time_trend = 0:1,
 #'                    lag = 0:1,
@@ -32,7 +32,7 @@
 #' models
 #' 
 #' # Fit the models to data
-#' fits <- eepd_pre(models, data = ptpdata,
+#' fits <- apm_pre(models, data = ptpdata,
 #'                  group_var = "group",
 #'                  time_var = "year",
 #'                  val_times = 1999:2007,
@@ -44,8 +44,8 @@
 #' 
 #' plot(fits, type = "error", ncol = 2)
 
-#' @exportS3Method plot eepd_pre_fits
-plot.eepd_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4, clip_at = 15, ...) {
+#' @exportS3Method plot apm_pre_fits
+plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4, clip_at = 15, ...) {
   chk::chk_string(type)
   type <- match.arg(type, c("weights", "errors"))
   
@@ -69,11 +69,11 @@ plot.eepd_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4, clip_a
     df <- x$grid
     
     if (nrow(df) != length(x[["pred_errors"]])) {
-      chk::err("the number of models implied to have been fit by the input object's `grid` component does not equal the the number of average prediction errors calculated, indicating a malformed `eepd_pre_fit` object")
+      chk::err("the number of models implied to have been fit by the input object's `grid` component does not equal the the number of average prediction errors calculated, indicating a malformed `apm_pre_fit` object")
     }
     
     if (length(unique(x$grid$model)) != length(x$models)) {
-      chk::err("the number of model specifications listed in the input object's `grid` component does not equal the the number of model specifications present, indicating a malformed `eepd_pre_fit` object")
+      chk::err("the number of model specifications listed in the input object's `grid` component does not equal the the number of model specifications present, indicating a malformed `apm_pre_fit` object")
     }
     
     df$pred_error <- as.vector(x[["pred_errors"]])

@@ -7,7 +7,7 @@
 robustness_bound(object, level = 0.95)
 }
 \arguments{
-\item{object}{an \code{eepd_est} object; the output of a call to \code{\link[=eepd_est]{eepd_est()}}. \code{M} must have been set to a nonzero value to use \code{robustness_bound()}.}
+\item{object}{an \code{apm_est} object; the output of a call to \code{\link[=apm_est]{apm_est()}}. \code{M} must have been set to a nonzero value to use \code{robustness_bound()}.}
 
 \item{level}{the desired confidence level. Set to 0 to ignore sampling variation in computing the interval bounds. Default is .95.}
 }
@@ -21,14 +21,14 @@ A single number corresponding to the changepoint value of M. If there is no posi
 data("ptpdata")
 
 # Combination of 4 models: 2 time trends, 2 lags
-models <- eepd_mod(list(crude_rate ~ 1),
+models <- apm_mod(list(crude_rate ~ 1),
                    lag = 0:1,
                    time_trend = 0:1)
 models
 
 # Fit the models to data; unit_var must be supplied for
 # fixed effects
-fits <- eepd_pre(models,
+fits <- apm_pre(models,
                  data = ptpdata,
                  group_var = "group",
                  time_var = "year",
@@ -36,7 +36,7 @@ fits <- eepd_pre(models,
                  unit_var = "state",
                  nsim = 100)
 
-est <- eepd_est(fits,
+est <- apm_est(fits,
                 post_time = 2008,
                 M = 1,
                 R = 20)
@@ -57,5 +57,5 @@ summary(est, level = 0, M = M)
 summary(est, level = .95, M = M)
 }
 \seealso{
-\code{\link[=summary.eepd_est]{summary.eepd_est()}} for examining the ATT and bounds for a given value of \code{M}; \code{\link[=uniroot]{uniroot()}} for the function that finds the changepoint value of \code{M}.
+\code{\link[=summary.apm_est]{summary.apm_est()}} for examining the ATT and bounds for a given value of \code{M}; \code{\link[=uniroot]{uniroot()}} for the function that finds the changepoint value of \code{M}.
 }
