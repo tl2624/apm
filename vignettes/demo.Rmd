@@ -60,6 +60,10 @@ Plot weights and errors
 plot(fits, type = "weights")
 
 plot(fits, type = "errors", ncol = 4)
+
+plot(fits, type = "predict", model = c(".bma", ".optimal"))
+
+plot(fits, type = "corrected", model = c(".bma", ".optimal"))
 ```
 
 Estimate ATT

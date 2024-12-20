@@ -58,8 +58,8 @@
 
 #' @export 
 apm_pre <- function(models, data, weights = NULL, group_var, time_var,
-                     val_times, unit_var, nsim = 1000, cl = NULL,
-                     verbose = TRUE) {
+                    val_times, unit_var, nsim = 1000, cl = NULL,
+                    verbose = TRUE) {
   
   # Argument checks
   chk::chk_not_missing(models, "`models`")
@@ -136,13 +136,25 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   }
   
   #Fit all estimates
-  val_data <- val_weights <- val_fits <- val_coefs <- observed_val_means <- vector("list", nrow(grid))
+  val_data <- val_weights <- val_fits <- val_coefs <- vector("list", nrow(grid))
   
-  apm_mat <- mat0 <- matrix(NA_real_,
-                             nrow = length(val_times),
-                             ncol = length(models),
-                             dimnames = list(val_times,
-                                             names(models)))
+  #Get observed means at each time point
+  times <- sort(unique(data[[time_var]]))
+  times <- times[times <= max(val_times)]
+  y <- model.response(model.frame(models[[1]]$formula, data = data))
+  
+  observed_val_means <- setNames(lapply(times, function(t) {
+    setNames(
+      vapply(group_levels, function(g) {
+        mean(y[data[[time_var]] == t & data[[group_var]] == g])
+      }, numeric(1L)),
+      group_levels
+    )
+  }), times)
+  
+  apm_arr <- array(NA_real_,
+                   dim = c(length(val_times), length(models), 2L),
+                   dimnames = list(val_times, names(models), group_levels))
   
   if (verbose) {
     cat("Fitting models...")
@@ -171,21 +183,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
       val_data[[f]] <- d[subset_i,, drop = FALSE]
       val_weights[[f]] <- weights[subset_i]
       val_coefs[[f]] <- na.omit(marginaleffects::get_coef(fit))
-      
-      y <- model.response(model.frame(update(mod$formula, . ~ 1),
-                                      data = val_data[[f]]))
-      
-      if (model$log) {
-        y <- exp(y)
-      }
-      
-      observed_val_means[[f]] <- setNames(
-        vapply(group_levels, function(g) {
-          .wtd_mean(y, val_weights[[f]], val_data[[f]][[group_var]] == g)
-        }, numeric(1L)),
-        group_levels
-      )
-      
+
       #Compute pred error
       
       # Compute prediction errors for each model for each validation period using original coefs
@@ -205,23 +203,26 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
         group_levels
       )
       
-      pred_error <- (observed_val_means[[f]]["1"] - observed_val_means[[f]]["0"]) -
-        (predicted_val_means_i["1"] - predicted_val_means_i["0"])
-      
-      apm_mat[t, i] <- pred_error
+      for (g in group_levels) {
+        apm_arr[t, i, g] <- observed_val_means[[as.character(val_time)]][g] - predicted_val_means_i[g]
+      }
       
       val_fits[[f]] <- fit
       
       grid[["time_ind"]][f] <- t
       grid[["model"]][f] <- i
-      f <- f + 1
+      f <- f + 1L
     }
   }
+  
+  #Difference in average prediction errors
+  apm_mat <- apm_arr[,, "1"] - apm_arr[,, "0"]
   
   #Simulate to get BMA weights
   
   ## Joint variance of all model coefficients, clustering for unit
   val_vcov <- vcovSUEST(val_fits, cluster = data[[unit_var]]) 
+  
   if (verbose) {
     cat(" Done.\nSimulating to compute BMA weights...\n")
   }
@@ -238,13 +239,18 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   #out_mat: all prediction errors; length(times) x length(models) x nsim
   out_mat <- simplify2array(pbapply::pblapply(seq_len(nsim), function(s) {
     
-    mat <- mat0
+    mat <- matrix(NA_real_,
+                  nrow = length(val_times),
+                  ncol = length(models),
+                  dimnames = list(val_times, names(models)))
     
     coefs <- sim_coefs[s,]
     
     for (f in seq_len(nrow(grid))) {
       i <- grid$model[f]
       t <- grid$time_ind[f]
+      
+      val_time <- val_times[t]
       
       fit <- val_fits[[f]]
       
@@ -267,11 +273,9 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
         }, numeric(1L)),
         group_levels
       )
-      
-      pred_error <- (observed_val_means[[f]]["1"] - predicted_val_means_s_i["1"]) -
-        (observed_val_means[[f]]["0"] - predicted_val_means_s_i["0"])
-      
-      mat[t, i] <- pred_error
+
+      mat[t, i] <- (observed_val_means[[as.character(val_time)]]["1"] - observed_val_means[[as.character(val_time)]]["0"]) -
+        (predicted_val_means_s_i["1"] - predicted_val_means_s_i["0"])
     }
     
     mat
@@ -290,6 +294,9 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
     cat("Done.\n")
   }
   
+  observed_means <- do.call("rbind", observed_val_means)
+  rownames(observed_means) <- names(observed_val_means)
+  
   BMA_weights <- tabulate(optimal_models, nbins = length(models)) / nsim
   
   fits <- list(models = models,
@@ -300,7 +307,9 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
                val_vcov = val_vcov,
                data = data,
                weights = weights,
-               pred_errors = apm_mat,
+               observed_means = observed_means,
+               pred_errors = apm_arr,
+               pred_errors_diff = apm_mat,
                BMA_weights = BMA_weights,
                nsim = nsim)
   
@@ -331,7 +340,7 @@ print.apm_pre_fits <- function(x, ...) {
 #' @exportS3Method summary apm_pre_fits
 summary.apm_pre_fits <- function(object, order = NULL, ...) {
   out <- data.frame(bma = object$BMA_weights,
-                    err = apply(abs(object[["pred_errors"]]), 2, max),
+                    err = apply(abs(object[["pred_errors_diff"]]), 2, max),
                     row.names = names(object$models))
   
   names(out) <- c("BMA weights", "Max|errors|")

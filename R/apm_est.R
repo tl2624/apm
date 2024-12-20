@@ -234,7 +234,9 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
               BMA_var_m = c(ATT = unname(BMA_var_m)),
               M = M,
               post_time = post_time,
+              observed_means = fits$observed_means,
               pred_errors = fits$pred_errors,
+              pred_errors_diff = fits$pred_errors_diff,
               BMA_weights = BMA_weights,
               boot_out = boot_out)
   
