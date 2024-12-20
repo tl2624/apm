@@ -3,7 +3,7 @@ title: "apm Demo"
 author: "Noah Greifer"
 date: "`r Sys.Date()`"
 vignette: >
-  %\VignetteIndexEntry{clarify}
+  %\VignetteIndexEntry{apm demo}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -38,8 +38,7 @@ fits <- apm_pre(models, data = ptpdata,
                  time_var = "year",
                  unit_var = "state",
                  val_times = 1999:2007,
-                 nsim = 500,
-                 cl = 3)
+                 nsim = 500)
 
 fits
 ```
@@ -70,8 +69,7 @@ Estimate ATT
 
 ```{r}
 est <- apm_est(fits, post_time = 2008,
-                M = 1, R = 500,
-                cl = 3)
+                M = 1, R = 500)
 
 est
 
