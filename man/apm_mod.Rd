@@ -7,10 +7,10 @@
 apm_mod(
   formula_list,
   family = "gaussian",
-  lag = 0,
-  diff_k = 0,
+  lag = 0L,
+  diff_k = 0L,
   log = FALSE,
-  time_trend = 0,
+  time_trend = 0L,
   fixef = FALSE,
   identiy_only_log = TRUE
 )

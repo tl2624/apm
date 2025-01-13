@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# apm
+# `apm`: Averaged Prediction Models
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -21,15 +21,15 @@ lags should appear as predictors. Below, we create a cross of 9 models.
 
 ``` r
 models <- apm_mod(deaths ~ 1,
-                   family = list("gaussian", "quasipoisson"),
-                   log = c(TRUE, FALSE),
-                   lag = 0, diff_k = 0, 
-                   time_trend = 0:2)
+                  family = list("gaussian", "quasipoisson"),
+                  log = c(TRUE, FALSE),
+                  lag = 0, diff_k = 0, 
+                  time_trend = 0:2)
 
 models
 #> - Model 1: baseline mean (log, Gaussian)
 #> deaths ~ 1
-#> family: gaussian(link = 'identity')
+#> family: gaussian(link = "identity")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: yes
@@ -38,7 +38,7 @@ models
 #> 
 #> - Model 2: baseline mean (Gaussian)
 #> deaths ~ 1
-#> family: gaussian(link = 'identity')
+#> family: gaussian(link = "identity")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: no
@@ -47,7 +47,7 @@ models
 #> 
 #> - Model 3: baseline mean (Quasipoisson)
 #> deaths ~ 1
-#> family: quasipoisson(link = 'log')
+#> family: quasipoisson(link = "log")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: no
@@ -56,7 +56,7 @@ models
 #> 
 #> - Model 4: linear trend (log, Gaussian)
 #> deaths ~ 1
-#> family: gaussian(link = 'identity')
+#> family: gaussian(link = "identity")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: yes
@@ -65,7 +65,7 @@ models
 #> 
 #> - Model 5: linear trend (Gaussian)
 #> deaths ~ 1
-#> family: gaussian(link = 'identity')
+#> family: gaussian(link = "identity")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: no
@@ -74,7 +74,7 @@ models
 #> 
 #> - Model 6: linear trend (Quasipoisson)
 #> deaths ~ 1
-#> family: quasipoisson(link = 'log')
+#> family: quasipoisson(link = "log")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: no
@@ -83,7 +83,7 @@ models
 #> 
 #> - Model 7: quadratic trend (log, Gaussian)
 #> deaths ~ 1
-#> family: gaussian(link = 'identity')
+#> family: gaussian(link = "identity")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: yes
@@ -92,7 +92,7 @@ models
 #> 
 #> - Model 8: quadratic trend (Gaussian)
 #> deaths ~ 1
-#> family: gaussian(link = 'identity')
+#> family: gaussian(link = "identity")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: no
@@ -101,7 +101,7 @@ models
 #> 
 #> - Model 9: quadratic trend (Quasipoisson)
 #> deaths ~ 1
-#> family: quasipoisson(link = 'log')
+#> family: quasipoisson(link = "log")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: no
@@ -117,14 +117,14 @@ to the current one.
 
 ``` r
 models2 <- apm_mod(list(deaths ~ 1),
-                    diff_k = 1)
+                   diff_k = 1)
 
 models <- c(models, models2)
 
 models
 #> - Model 1: baseline mean (log, Gaussian)
 #> deaths ~ 1
-#> family: gaussian(link = 'identity')
+#> family: gaussian(link = "identity")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: yes
@@ -133,7 +133,7 @@ models
 #> 
 #> - Model 2: baseline mean (Gaussian)
 #> deaths ~ 1
-#> family: gaussian(link = 'identity')
+#> family: gaussian(link = "identity")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: no
@@ -142,7 +142,7 @@ models
 #> 
 #> - Model 3: baseline mean (Quasipoisson)
 #> deaths ~ 1
-#> family: quasipoisson(link = 'log')
+#> family: quasipoisson(link = "log")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: no
@@ -151,7 +151,7 @@ models
 #> 
 #> - Model 4: linear trend (log, Gaussian)
 #> deaths ~ 1
-#> family: gaussian(link = 'identity')
+#> family: gaussian(link = "identity")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: yes
@@ -160,7 +160,7 @@ models
 #> 
 #> - Model 5: linear trend (Gaussian)
 #> deaths ~ 1
-#> family: gaussian(link = 'identity')
+#> family: gaussian(link = "identity")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: no
@@ -169,7 +169,7 @@ models
 #> 
 #> - Model 6: linear trend (Quasipoisson)
 #> deaths ~ 1
-#> family: quasipoisson(link = 'log')
+#> family: quasipoisson(link = "log")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: no
@@ -178,7 +178,7 @@ models
 #> 
 #> - Model 7: quadratic trend (log, Gaussian)
 #> deaths ~ 1
-#> family: gaussian(link = 'identity')
+#> family: gaussian(link = "identity")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: yes
@@ -187,7 +187,7 @@ models
 #> 
 #> - Model 8: quadratic trend (Gaussian)
 #> deaths ~ 1
-#> family: gaussian(link = 'identity')
+#> family: gaussian(link = "identity")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: no
@@ -196,7 +196,7 @@ models
 #> 
 #> - Model 9: quadratic trend (Quasipoisson)
 #> deaths ~ 1
-#> family: quasipoisson(link = 'log')
+#> family: quasipoisson(link = "log")
 #> outcome lag: none
 #> outcome diff: none
 #> log outcome: no
@@ -205,7 +205,7 @@ models
 #> 
 #> - Model 10: baseline mean (1st diff, Gaussian)
 #> deaths ~ 1
-#> family: gaussian(link = 'identity')
+#> family: gaussian(link = "identity")
 #> outcome lag: none
 #> outcome diff: 1
 #> log outcome: no
@@ -229,11 +229,11 @@ errors and BMA weights.
 
 ``` r
 fits <- apm_pre(models,
-                 data = ptpdata,
-                 group_var = "group",
-                 time_var = "year",
-                 unit_var = "state",
-                 val_times = 2004:2007)
+                data = ptpdata,
+                group_var = "group",
+                time_var = "year",
+                unit_var = "state",
+                val_times = 2004:2007)
 #> Fitting models... Done.
 #> Simulating to compute BMA weights...
 #> Done.
@@ -259,9 +259,9 @@ model selection.
 
 ``` r
 est <- apm_est(fits,
-                post_time = 2008,
-                M = 1,
-                R = 50)
+               post_time = 2008,
+               M = 1,
+               R = 50)
 
 est
 #> An `apm_est` object
@@ -278,6 +278,6 @@ est
 
 summary(est)
 #>       Estimate Std. Error  CI low CI high z_value Pr(>|z|)
-#> ATT      61.64      39.39  -15.57  138.85   1.565    0.118
-#> M = 1        .          . -113.22  179.67       .        .
+#> ATT      60.12      40.13  -18.54  138.78   1.498    0.134
+#> M = 1        .          . -115.24  179.47       .        .
 ```

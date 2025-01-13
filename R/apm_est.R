@@ -151,6 +151,9 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
         
         .val_data_i_v <- d[subset_i_v,, drop = FALSE]
         .val_weights_i_v <- .weights[subset_i_v] * weights[subset_i_v]
+        .val_groups_i_v <- setNames(lapply(group_levels, function(g) {
+          which(.val_data_i_v[[group_var]] == g)
+        }), group_levels)
         
         y <- model.response(model.frame(update(mods[[i]]$formula, . ~ 1),
                                         data = .val_data_i_v))
@@ -161,7 +164,7 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
         
         observed_val_means_i <- setNames(
           vapply(group_levels, function(g) {
-            .wtd_mean(y, .val_weights_i_v, .val_data_i_v[[group_var]] == g)
+            .wtd_mean(y, .val_weights_i_v, .val_groups_i_v[[g]])
           }, numeric(1L)),
           group_levels
         )
@@ -173,8 +176,13 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
                               val_time = time,
                               family = model$family)
         
+        .val_predict_prep_i_v <- .make_predict_prep(fit, .val_data_i_v)
+        
         ##Generate predictions on validation data
-        p <- predict(fit, newdata = .val_data_i_v, type = "response")
+        # p <- predict(fit, newdata = .val_data_i_v, type = "response")
+        p <- .predict_quick(na.omit(coef(fit)),
+                            .val_predict_prep_i_v,
+                            fit$family$linkinv)
         
         #Unlog if outcome is logged to keep on original scale
         if (model$log) {
@@ -183,7 +191,7 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
         
         predicted_val_means_i <- setNames(
           vapply(group_levels, function(g) {
-            .wtd_mean(p, .val_weights_i_v, .val_data_i_v[[group_var]] == g)
+            .wtd_mean(p, .val_weights_i_v, .val_groups_i_v[[g]])
           }, numeric(1L)),
           group_levels
         )
@@ -200,7 +208,7 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
       return(.atts)
     }
     
-    .max_abs_pred_errors <- apply(abs(pred_error_mat[-1,,drop = FALSE]), 2, max)
+    .max_abs_pred_errors <- apply(abs(pred_error_mat[-1, , drop = FALSE]), 2L, max)
     
     c(.atts, .max_abs_pred_errors)
   }
@@ -227,7 +235,7 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
   BMA_var <- BMA_var_b + BMA_var_m
   
   out <- list(BMA_att = c(ATT = unname(BMA_att)),
-              atts = matrix(atts, ncol = 1,
+              atts = matrix(atts, ncol = 1L,
                             dimnames = list(names(models), "ATT")),
               BMA_var = c(ATT = unname(BMA_var)),
               BMA_var_b = c(ATT = unname(BMA_var_b)),
@@ -295,8 +303,7 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
 
 #' @exportS3Method print apm_est
 print.apm_est <- function(x, ...) {
-  cat("An `apm_est` object\n")
-  cat("\n")
+  cat("An `apm_est` object\n\n")
   cat(sprintf(" - grouping variable: %s\n", attr(x, "group_var")))
   cat(sprintf(" - unit variable: %s\n", attr(x, "unit_var")))
   cat(sprintf(" - time variable: %s\n", attr(x, "time_var")))
@@ -319,10 +326,10 @@ summary.apm_est <- function(object, level = .95, M = NULL, ...) {
     sqrt(object[["BMA_var"]]["ATT"]))
   
   res <- cbind(res,
-               res[[1]] + res[[2]] * qnorm((1 - level) / 2),
-               res[[1]] + res[[2]] * qnorm(1 - (1 - level) / 2),
-               res[[1]] / res[[2]],
-               2 * pnorm(-abs(res[[1]] / res[[2]])))
+               res[[1L]] + res[[2L]] * qnorm((1 - level) / 2),
+               res[[1L]] + res[[2L]] * qnorm(1 - (1 - level) / 2),
+               res[[1L]] / res[[2L]],
+               2 * pnorm(-abs(res[[1L]] / res[[2L]])))
   
   names(res) <- c("Estimate", "Std. Error", "CI low", "CI high", "z_value", "Pr(>|z|)")
   
@@ -385,12 +392,12 @@ summary.apm_est <- function(object, level = .95, M = NULL, ...) {
         BMA_ub_var <- BMA_ub_var_b + BMA_ub_var_m
       }
       
-      res_m[[3]][1] <- BMA_att_lb + sqrt(BMA_lb_var) * qnorm((1 - level) / 2)
-      res_m[[4]][1] <- BMA_att_ub + sqrt(BMA_ub_var) * qnorm(1 - (1 - level) / 2)
+      res_m[[3L]][1L] <- BMA_att_lb + sqrt(BMA_lb_var) * qnorm((1 - level) / 2)
+      res_m[[4L]][1L] <- BMA_att_ub + sqrt(BMA_ub_var) * qnorm(1 - (1 - level) / 2)
       
       names(res_m) <- names(res)
       
-      rownames(res_m) <- sprintf("M = %s", round (m, 2))
+      rownames(res_m) <- sprintf("M = %s", round(m, 2))
       
       res_m
     }))
@@ -420,8 +427,8 @@ print.summary.apm_est <- function(x, digits = max(3, getOption("digits") - 3), .
 plot.apm_est <- function(x, label = TRUE, size.weights = TRUE, ...) {
   chk::chk_flag(label)
 
-  max_abs_pred_error <- apply(abs(x[["pred_errors"]]), 2, max)
-  est <- x[["atts"]][,1]
+  max_abs_pred_error <- apply(abs(x[["pred_errors"]]), 2L, max)
+  est <- x[["atts"]][,1L]
   
   labels <- {
     if (label) rownames(x[["atts"]])
@@ -434,8 +441,9 @@ plot.apm_est <- function(x, label = TRUE, size.weights = TRUE, ...) {
                           weights = x[["BMA_weights"]],
                           best = seq_along(est) == which.min(max_abs_pred_error[names(est)]))
   
-  p <- ggplot(plot_data, aes(x = .data$pred_error,
-                             y = .data$estimate)) +
+  p <- ggplot(plot_data,
+              aes(x = .data$pred_error,
+                  y = .data$estimate)) +
     geom_point(aes(color = .data$best,
                    size = if (size.weights) .data$weights),
                alpha = .8) +

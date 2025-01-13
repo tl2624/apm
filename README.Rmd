@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# apm
+# `apm`: Averaged Prediction Models
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -29,10 +29,10 @@ We can specify the models to test using `apm_mod()`. This create a full cross of
 
 ```{r}
 models <- apm_mod(deaths ~ 1,
-                   family = list("gaussian", "quasipoisson"),
-                   log = c(TRUE, FALSE),
-                   lag = 0, diff_k = 0, 
-                   time_trend = 0:2)
+                  family = list("gaussian", "quasipoisson"),
+                  log = c(TRUE, FALSE),
+                  lag = 0, diff_k = 0, 
+                  time_trend = 0:2)
 
 models
 ```
@@ -41,7 +41,7 @@ Normally, this cross would yield 12 = 3 (formulas) x 2 (families) x 2 (log T/F),
 
 ```{r}
 models2 <- apm_mod(list(deaths ~ 1),
-                    diff_k = 1)
+                   diff_k = 1)
 
 models <- c(models, models2)
 
@@ -58,11 +58,11 @@ We use `apm_fit()` to fit the models, and calculate the prediction errors and BM
 
 ```{r}
 fits <- apm_pre(models,
-                 data = ptpdata,
-                 group_var = "group",
-                 time_var = "year",
-                 unit_var = "state",
-                 val_times = 2004:2007)
+                data = ptpdata,
+                group_var = "group",
+                time_var = "year",
+                unit_var = "state",
+                val_times = 2004:2007)
 
 fits
 ```
@@ -73,9 +73,9 @@ We compute the ATT using `apm_est()`, which uses bootstrapping to compute model 
 
 ```{r}
 est <- apm_est(fits,
-                post_time = 2008,
-                M = 1,
-                R = 50)
+               post_time = 2008,
+               M = 1,
+               R = 50)
 
 est
 

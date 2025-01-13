@@ -13,7 +13,7 @@ apm_pre(
   time_var,
   val_times,
   unit_var,
-  nsim = 1000,
+  nsim = 1000L,
   cl = NULL,
   verbose = TRUE
 )

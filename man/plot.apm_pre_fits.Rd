@@ -8,7 +8,7 @@
   x,
   type = "weights",
   abs = TRUE,
-  ncol = 4,
+  ncol = 4L,
   clip_at = 15,
   model = ".optimal",
   ...
@@ -25,7 +25,7 @@
 
 \item{clip_at}{when \code{type = "errors"}, the value (in robust z-score units) at which to clip the y-axis of the plot to prevent outliers from distorting it. Default is 15. Set to \code{Inf} to prevent clipping.}
 
-\item{model}{string; when \code{type = "predict"} or \code{type = "corrected"}, the model(s) to plot. Allowable values include \code{".optimal"} to plot the model with the smallest maximum absolute difference in average prediction errors, \code{".bma"} to plot the BMA-weighted model, \code{".all"} to plot all models (excluding the BMA-weighted predictions), or the names of one or more specific models. Abbreviations allowed.}
+\item{model}{string; when \code{type = "predict"} or \code{type = "corrected"}, the model(s) to plot. Allowable values include \code{".optimal"} to plot the model with the smallest maximum absolute difference in average prediction errors, \code{".all"} to plot all models (excluding the BMA-weighted predictions), or the names of one or more specific models. Abbreviations allowed.}
 
 \item{\dots}{ignored.}
 }
@@ -69,9 +69,9 @@ plot(fits, type = "weights")
 
 plot(fits, type = "error", ncol = 2)
 
-plot(fits, type = "predict", model = c(".bma", ".optimal"))
+plot(fits, type = "predict", model = ".optimal")
 
-plot(fits, type = "corrected", model = c(".bma", ".optimal"))
+plot(fits, type = "corrected", model = ".optimal")
 }
 \seealso{
 \code{\link[=apm_pre]{apm_pre()}} to to compute the difference in average prediction errors and BMA weights; \code{ggplot2::geom_col()}, which is used to create the plots.

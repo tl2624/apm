@@ -1,5 +1,5 @@
 Package: apm
-Title: What the Package Does (One Line, Title Case)
+Title: Averaged Prediction Models
 Version: 0.0.0.9002
 Authors@R: 
   c(person("Thomas", "Leavitt", email = "thomas.leavitt@baruch.cuny.edu", role = c("aut"),
@@ -19,7 +19,6 @@ Imports:
   ggrepel,
   MASS,
   sandwich,
-  marginaleffects (>= 0.19.0),
   pbapply (>= 1.7-2),
   fwb (>= 0.2.0),
   chk (>= 0.9.0)

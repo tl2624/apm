@@ -12,7 +12,7 @@ vcovSUEST <- function(fits, cluster = NULL) {
   
   if (!is.null(cluster)) {
     if (inherits(cluster, "formula")) {
-      cluster_tmp <- expand.model.frame(fits[[1]], cluster, na.expand = TRUE)
+      cluster_tmp <- expand.model.frame(fits[[1L]], cluster, na.expand = TRUE)
       cluster_f <- as.list(model.frame(cluster, cluster_tmp, na.action = na.pass))
     }
     else {
@@ -20,7 +20,7 @@ vcovSUEST <- function(fits, cluster = NULL) {
     }
     
     for (i in seq_along(cluster_f)) {
-      cluster_f[[i]] <- .fill_vec(u, setNames(cluster_f[[i]], rownames[[1]]))
+      cluster_f[[i]] <- .fill_vec(u, setNames(cluster_f[[i]], rownames[[1L]]))
     }
     
     if (inherits(cluster, "formula")) {
@@ -57,26 +57,32 @@ vcovSUEST <- function(fits, cluster = NULL) {
   }
   
   #Small sample adjustment (setting cadjust = TRUE in vcovCL)
-  g <- vapply(seq_along(clu), function(i) {
-    if (is.factor(cluster[[i]])) {
-      nlevels(cluster[[i]])
-    }
-    else {
-      length(unique(cluster[[i]]))
-    }
-  }, numeric(1L))
-  
-  breads <- lapply(fits, function(f) .bread(f) / nobs(f))
-
-  ef <- lapply(seq_along(fits), function(i) {
-    ef_i <- sandwich::estfun(fits[[i]])
-    ef_i[is.na(ef_i)] <- 0
-    rownames(ef_i) <- rownames[[i]]
-    
-    .fill_mat(u, ef_i)
+  g <- lapply(seq_along(fits), function(i) {
+    vapply(seq_along(clu), function(u) {
+      cu <- cluster[[u]]
+      length(unique(cu[-fits[[i]]$na.action]))
+    }, numeric(1L))
   })
   
-  coef_lengths <- vapply(ef, ncol, numeric(1L))
+  breads <- lapply(fits, function(f) .bread(f) / nobs(f))
+  
+  ef <- lapply(seq_along(fits), function(i) {
+    ef_i <- sandwich::estfun(fits[[i]])
+    
+    if (anyNA(ef_i)) {
+      ef_i[is.na(ef_i)] <- 0
+    }
+    
+    rownames(ef_i) <- rownames[[i]]
+    
+    ef_i <- .fill_mat(u, ef_i)
+    
+    lapply(seq_along(clu), function(u) {
+      rowsum(ef_i, cluster[[u]], reorder = FALSE)
+    })
+  })
+  
+  coef_lengths <- vapply(breads, ncol, numeric(1L))
   
   coef_inds <- split(seq_len(sum(coef_lengths)),
                      rep(seq_along(coef_lengths), coef_lengths))
@@ -84,7 +90,7 @@ vcovSUEST <- function(fits, cluster = NULL) {
   #VCOV matrix to be returned
   V <- matrix(NA_real_, nrow = sum(coef_lengths), ncol = sum(coef_lengths))
   dimnames(V) <- rep.int(list(unlist(lapply(seq_along(fits), function(i) {
-    paste(names(fits)[i], colnames(ef[[i]]), sep = "_")
+    paste(names(fits)[i], colnames(breads[[i]]), sep = "_")
   }))), 2L)
   
   for (i in seq_along(fits)) {
@@ -93,10 +99,8 @@ vcovSUEST <- function(fits, cluster = NULL) {
     #Usual within-model HC0 vcov
     S <- 0
     for (u in seq_along(clu)) {
-      cu <- cluster[[u]]
-      gu <- length(unique(cu[-fits[[i]]$na.action]))
-      adj <- gu/(gu - 1)
-      S <- S + sign[u] * adj * crossprod(rowsum(ef[[i]], cu, reorder = FALSE))
+      adj <- g[[i]][u]/(g[[i]][u] - 1)
+      S <- S + sign[u] * adj * crossprod(ef[[i]][[u]])
     }
     
     V[ind_i, ind_i] <- breads[[i]] %*% S %*% breads[[i]]
@@ -106,15 +110,9 @@ vcovSUEST <- function(fits, cluster = NULL) {
       
       S <- 0
       for (u in seq_along(clu)) {
-        cu <- cluster[[u]]
+        adj <- sqrt(g[[i]][u]/(g[[i]][u] - 1)) * sqrt(g[[j]][u]/(g[[j]][u] - 1))
         
-        gui <- length(unique(cu[-fits[[i]]$na.action]))
-        guj <- length(unique(cu[-fits[[j]]$na.action]))
-        
-        adj <- sqrt(gui/(gui - 1)) * sqrt(guj/(guj - 1))
-
-        S <- S + sign[u] * adj * crossprod(rowsum(ef[[i]], cu, reorder = FALSE),
-                                           rowsum(ef[[j]], cu, reorder = FALSE))
+        S <- S + sign[u] * adj * crossprod(ef[[i]][[u]], ef[[j]][[u]])
       }
       
       #between-model vcov components
@@ -139,16 +137,16 @@ vcovSUEST <- function(fits, cluster = NULL) {
   }
   
   Qr <- x$qr
-  
-  coef.p <- x$coefficients[Qr$pivot[1:p]]
-  cov.unscaled <- chol2inv(Qr$qr[1:p, 1:p, drop = FALSE])
+  p1 <- seq_len(p)
+  coef.p <- x$coefficients[Qr$pivot[p1]]
+  cov.unscaled <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
   dimnames(cov.unscaled) <- list(names(coef.p), names(coef.p))
   
   df <- p + x$df.residual
   
   out <- cov.unscaled * df
   
-  if (class(x)[1] == "glm" && !substr(x$family$family, 1L, 17L) %in% c("poisson", "binomial", "Negative Binomial")) {
+  if (class(x)[1L] == "glm" && !substr(x$family$family, 1L, 17L) %in% c("poisson", "binomial", "Negative Binomial")) {
     ww <- weights(x, "working")
     wres <- as.vector(residuals(x, "working")) * ww
     dispersion <- sum(wres^2, na.rm = TRUE) / sum(ww, na.rm = TRUE)

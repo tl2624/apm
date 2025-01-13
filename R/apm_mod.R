@@ -42,8 +42,8 @@
 
 
 #' @export 
-apm_mod <- function(formula_list, family = "gaussian", lag = 0, diff_k = 0,
-                     log = FALSE, time_trend = 0, fixef = FALSE, identiy_only_log = TRUE) {
+apm_mod <- function(formula_list, family = "gaussian", lag = 0L, diff_k = 0L,
+                     log = FALSE, time_trend = 0L, fixef = FALSE, identiy_only_log = TRUE) {
   # Check arguments
   
   ## Check formula_list
@@ -79,7 +79,7 @@ apm_mod <- function(formula_list, family = "gaussian", lag = 0, diff_k = 0,
         return(list(family = "Negative Binomial", link = "log"))
       }
       
-      f <- get(f, mode = "function", envir = parent.frame(2))
+      f <- get(f, mode = "function", envir = parent.frame(2L))
     }
     
     if (is.function(f)) {
@@ -181,9 +181,9 @@ print.apm_models <- function(x, ...) {
   for (i in seq_along(x)) {
     cat(sprintf("- Model %s: %s\n", i, names(x)[i]))
     cat(deparse1(x[[i]]$formula), "\n", sep = "")
-    cat(sprintf("family: %s(link = '%s')\n",
+    cat(sprintf("family: %s(link = %s)\n",
                 x[[i]]$family$family,
-                x[[i]]$family$link))
+                .add_quotes(x[[i]]$family$link, 2L)))
     cat(sprintf("outcome lag: %s\n", if (x[[i]]$lag == 0) "none" else paste(seq_len(x[[i]]$lag), collapse = ", ")))
     cat(sprintf("outcome diff: %s\n", if (x[[i]]$diff_k == 0) "none" else x[[i]]$diff_k))
     cat(sprintf("log outcome: %s\n", if (x[[i]]$log) "yes" else "no"))
@@ -261,7 +261,7 @@ c.apm_models <- function(..., recursive = TRUE) {
       }
       
       if (okay || length(ff2[[m]]) == 1L) {
-        ff2[[m]] <- ff2[[m]][1]
+        ff2[[m]] <- ff2[[m]][1L]
       }
       else {
         ff2[[m]] <- sprintf("%s(link = %s)", ff2[[m]]["family"], ff2[[m]]["link"])
@@ -274,7 +274,7 @@ c.apm_models <- function(..., recursive = TRUE) {
   vapply(seq_along(models), function(m) {
     model <- models[[m]]
     
-    n <- character(0)
+    n <- character(0L)
     
     formula <- terms(model$formula)
     

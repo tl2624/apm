@@ -7,7 +7,7 @@
 #' @param abs `logical`; when `type = "errors"`, whether to plot the differences in average prediction errors in absolute value (`TRUE`, default) or not (`FALSE`). 
 #' @param ncol when `type` is `"errors"`, `"predict"`, or `"corrected"`, the number of columns to use to display the plots. Default is 4.
 #' @param clip_at when `type = "errors"`, the value (in robust z-score units) at which to clip the y-axis of the plot to prevent outliers from distorting it. Default is 15. Set to `Inf` to prevent clipping.
-#' @param model string; when `type = "predict"` or `type = "corrected"`, the model(s) to plot. Allowable values include `".optimal"` to plot the model with the smallest maximum absolute difference in average prediction errors, `".bma"` to plot the BMA-weighted model, `".all"` to plot all models (excluding the BMA-weighted predictions), or the names of one or more specific models. Abbreviations allowed.
+#' @param model string; when `type = "predict"` or `type = "corrected"`, the model(s) to plot. Allowable values include `".optimal"` to plot the model with the smallest maximum absolute difference in average prediction errors, `".all"` to plot all models (excluding the BMA-weighted predictions), or the names of one or more specific models. Abbreviations allowed.
 #' @param \dots ignored.
 #' 
 #' @returns
@@ -49,22 +49,34 @@
 #' 
 #' plot(fits, type = "error", ncol = 2)
 #' 
-#' plot(fits, type = "predict", model = c(".bma", ".optimal"))
+#' plot(fits, type = "predict", model = ".optimal")
 #' 
-#' plot(fits, type = "corrected", model = c(".bma", ".optimal"))
+#' plot(fits, type = "corrected", model = ".optimal")
 
 #' @exportS3Method plot apm_pre_fits
-plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4, clip_at = 15, model = ".optimal", ...) {
+plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4L, clip_at = 15, model = ".optimal", ...) {
   chk::chk_string(type)
-  type <- match.arg(type, c("weights", "errors", "predict", "corrected"))
+  type <- .match_arg(type, c("weights", "errors", "predict", "corrected"))
+  
+  if (length(x[["models"]]) != dim(x[["pred_errors"]])[2L] ||
+      length(x[["models"]]) != dim(x[["pred_errors_diff"]])[2L] ||
+      length(x[["models"]]) != length(x[["BMA_weights"]])) {
+    chk::err("the `apm_pre_fit` object appears to be malformed")
+  }
+  
+  dimnames(x[["pred_errors"]])[[2L]] <- names(x[["models"]])
+  dimnames(x[["pred_errors_diff"]])[[2L]] <- names(x[["models"]])
   
   if (type == "weights") {
     
-    models <- factor(names(x[["models"]]), levels = names(x[["models"]]))
+    d <- data.frame(
+      models = factor(names(x[["models"]]), levels = names(x[["models"]])),
+      BMA_weights = x[["BMA_weights"]]
+    )
     
-    p <- ggplot() +
+    p <- ggplot(d) +
       geom_hline(yintercept = 0) +
-      geom_col(aes(x = models, y = x[["BMA_weights"]])) +
+      geom_col(aes(x = .data[["models"]], y = .data[["BMA_weights"]])) +
       theme_bw() +
       labs(x = "Prediction Model", y = "Posterior Probability") +
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -75,13 +87,13 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4, clip_at
     chk::chk_gte(ncol, 1)
     chk::chk_number(clip_at)
     
-    df <- x$grid
+    df <- x[["grid"]]
     
     if (nrow(df) != length(x[["pred_errors_diff"]])) {
       chk::err("the number of models implied to have been fit by the input object's `grid` component does not equal the the number of average prediction errors calculated, indicating a malformed `apm_pre_fit` object")
     }
     
-    if (length(unique(x$grid$model)) != length(x$models)) {
+    if (length(unique(x[["grid"]][["model"]])) != length(x[["models"]])) {
       chk::err("the number of model specifications listed in the input object's `grid` component does not equal the the number of model specifications present, indicating a malformed `apm_pre_fit` object")
     }
     
@@ -92,7 +104,7 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4, clip_at
     }
     
     df$time <- factor(df$time_ind, levels = seq_along(x$val_times),
-                      labels = x$val_times)
+                      labels = x[["val_times"]])
     
     df$model <- factor(df$model,
                        levels = seq_along(x$models),
@@ -103,16 +115,18 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4, clip_at
       df$is_max[df$model == j][which.max(df$pred_errors_diff[df$model == j])] <- "yes"
     }
     
-    max_abs_pred_error <- apply(abs(x[["pred_errors_diff"]]), 2, max)
+    max_abs_pred_error <- apply(abs(x[["pred_errors_diff"]]), 2L, max)
     
-    strip_cols <- rep(x = "white", times = length(models))
+    strip_cols <- rep.int("white", length(x$models))
     strip_cols[which.min(max_abs_pred_error)] <- "gray"
     
     strip <- strip_themed(background_x = elem_list_rect(fill = strip_cols))
     
     #Adjust plot to accommodate extreme outliers
     p <- ggplot(df) +
-      geom_col(aes(x = as.numeric(.data$time), y = .data$pred_errors_diff, fill = .data$is_max),
+      geom_col(aes(x = as.numeric(.data$time),
+                   y = .data$pred_errors_diff,
+                   fill = .data$is_max),
                width = .96) +
       geom_hline(yintercept = 0) +
       facet_wrap2(vars(.data$model), ncol = ncol, strip = strip,
@@ -120,15 +134,16 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4, clip_at
       scale_x_continuous(labels = levels(df$time),
                          breaks = seq_len(nlevels(df$time))) +
       scale_fill_manual(values = c("yes" = "black", "no" = "gray70")) +
-      labs(y = sprintf("%sDifference in Average Prediction Errors", if (abs) "Absolute " else ""),
+      labs(y = sprintf("%sDifference in Average Prediction Errors",
+                       if (abs) "Absolute " else ""),
            x = "Validation Period") +
       guides(fill = "none") +
       theme_bw() +
       theme(axis.text.x = element_text(angle = 90, vjust = .5))
     
-    pe_std <- abs(df$pred_errors_diff - median(df$pred_errors_diff)) / mad(df$pred_errors_diff)
+    pe_std <- abs(df[["pred_errors_diff"]] - median(df[["pred_errors_diff"]])) / mad(df[["pred_errors_diff"]])
     if (any(pe_std > clip_at)) {
-      ul <- max(df$pred_errors_diff[pe_std <= clip_at])
+      ul <- max(df[["pred_errors_diff"]][pe_std <= clip_at])
       ylim <- c(0, ul)
       p <- p + scale_y_continuous(expand = expansion()) +
         coord_cartesian(ylim = ylim)
@@ -140,8 +155,8 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4, clip_at
     chk::chk_count(ncol)
     chk::chk_gte(ncol, 1)
     
-    model <- match.arg(model, c(".optimal", ".bma", ".all", names(x[["models"]])),
-                       several.ok = TRUE)
+    model <- .match_arg(model, c(".optimal", ".all", names(x[["models"]])),
+                        several.ok = TRUE)
     
     if (any(model == ".all")) {
       m_a <- which(model == ".all")[1L]
@@ -150,39 +165,30 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4, clip_at
     }
     
     if (any(model == ".optimal")) {
-      model[model == ".optimal"] <- names(x[["models"]])[which.max(apply(abs(x[["pred_errors_diff"]]), 2, max))]
+      model[model == ".optimal"] <- names(x[["models"]])[which.min(apply(abs(x[["pred_errors_diff"]]), 2L, max))]
     }
     
     model <- unique(model)
     
     pred_errors <- do.call("rbind", lapply(model, function(m) {
-      if (m == ".bma") {
-        pe <- array(NA_real_, dim = dim(x[["pred_errors"]])[-2L],
-                             dimnames = dimnames(x[["pred_errors"]])[-2L])
-        for (i in seq_len(dim(x[["pred_errors"]])[3L])) {
-          pe[, i] <- x[["pred_errors"]][, , i] %*% x[["BMA_weights"]]
-        }
-      }
-      else {
-        pe <- x[["pred_errors"]][, m, ]
-      }
+      pe <- x[["pred_errors"]][, m, ]
       
       merge(data.frame(time = rownames(x[["observed_means"]]),
                        model = m),
             as.data.frame(pe), by.x = "time", by.y = 0, all.x = TRUE)
     }))
     
-    df <- reshape(as.data.frame(x$observed_means),
+    df <- reshape(as.data.frame(x[["observed_means"]]),
                   direction = "long", times = c("0", "1"),
                   varying = c("0", "1"), timevar = "group",
                   v.names = "observed", idvar = "time",
-                  ids = rownames(x$observed_means))
+                  ids = rownames(x[["observed_means"]]))
     
     df_pred <- reshape(pred_errors,
                        direction = "long", times = c("0", "1"),
                        varying = c("0", "1"), timevar = "group",
                        v.names = "pred_error", idvar = c("time", "model"))
-
+    
     df <- merge(df_pred, df,
                 by = c("group", "time"),
                 all = TRUE)
@@ -194,15 +200,7 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4, clip_at
     
     df$time <- as.factor(df$time)
     
-    if (any(model == ".bma")) {
-      new_model <- model
-      new_model[new_model == ".bma"] <- "BMA-weighted"
-      df$model <- factor(df$model, levels = model,
-                         labels = new_model)
-    }
-    else {
-      df$model <- factor(df$model, levels = model)
-    }
+    df$model <- factor(df$model, levels = model)
     
     p <- ggplot(df, aes(x = as.numeric(.data$time), color = .data$group)) +
       geom_point(aes(y = .data$observed)) +
@@ -222,8 +220,8 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4, clip_at
     chk::chk_count(ncol)
     chk::chk_gte(ncol, 1)
     
-    model <- match.arg(model, c(".optimal", ".bma", ".all", names(x[["models"]])),
-                       several.ok = TRUE)
+    model <- .match_arg(model, c(".optimal", ".all", names(x[["models"]])),
+                        several.ok = TRUE)
     
     if (any(model == ".all")) {
       m_a <- which(model == ".all")[1L]
@@ -232,32 +230,23 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4, clip_at
     }
     
     if (any(model == ".optimal")) {
-      model[model == ".optimal"] <- names(x[["models"]])[which.max(apply(abs(x[["pred_errors_diff"]]), 2, max))]
+      model[model == ".optimal"] <- names(x[["models"]])[which.min(apply(abs(x[["pred_errors_diff"]]), 2L, max))]
     }
     
     model <- unique(model)
     
     pred_errors <- do.call("rbind", lapply(model, function(m) {
-      if (m == ".bma") {
-        pe <- array(NA_real_, dim = dim(x[["pred_errors"]])[-2L],
-                    dimnames = dimnames(x[["pred_errors"]])[-2L])
-        for (i in seq_len(dim(x[["pred_errors"]])[3L])) {
-          pe[, i] <- x[["pred_errors"]][, , i] %*% x[["BMA_weights"]]
-        }
-      }
-      else {
-        pe <- x[["pred_errors"]][, m, ]
-      }
+      pe <- x[["pred_errors"]][, m, ]
       
       merge(data.frame(time = rownames(x[["observed_means"]]),
                        model = m),
             as.data.frame(pe), by.x = "time", by.y = 0, all.x = TRUE)
     }))
-
+    
     names(pred_errors) <- c("time", "model", "pred_error.0", "pred_error.1")
     
-    observed_means <- cbind(time = rownames(x$observed_means),
-                            as.data.frame(x$observed_means))
+    observed_means <- cbind(time = rownames(x[["observed_means"]]),
+                            as.data.frame(x[["observed_means"]]))
     
     names(observed_means) <- c("time", "observed.0", "observed.1")
     
@@ -268,15 +257,8 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4, clip_at
     
     df$time <- as.factor(df$time)
     
-    if (any(model == ".bma")) {
-      new_model <- model
-      new_model[new_model == ".bma"] <- "BMA-weighted"
-      df$model <- factor(df$model, levels = model,
-                         labels = new_model)
-    }
-    else {
-      df$model <- factor(df$model, levels = model)
-    }
+    
+    df$model <- factor(df$model, levels = model)
     
     p <- ggplot(df, aes(x = as.numeric(.data$time))) +
       geom_point(aes(y = .data$observed.1)) +

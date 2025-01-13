@@ -58,7 +58,7 @@
 
 #' @export 
 apm_pre <- function(models, data, weights = NULL, group_var, time_var,
-                    val_times, unit_var, nsim = 1000, cl = NULL,
+                    val_times, unit_var, nsim = 1000L, cl = NULL,
                     verbose = TRUE) {
   
   # Argument checks
@@ -120,7 +120,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   # Create grid of models to be fit
   grid <- as.data.frame(matrix(NA_integer_,
                                nrow = length(models) * length(val_times),
-                               ncol = 2,
+                               ncol = 2L,
                                dimnames = list(NULL, c("time_ind", "model"))))
   
   #Remove models with problematic lags
@@ -136,12 +136,12 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   }
   
   #Fit all estimates
-  val_data <- val_weights <- val_fits <- val_coefs <- vector("list", nrow(grid))
+  val_data <- val_weights <- val_fits <- val_coefs <- val_predict_prep <- val_groups <- vector("list", nrow(grid))
   
   #Get observed means at each time point
   times <- sort(unique(data[[time_var]]))
   times <- times[times <= max(val_times)]
-  y <- model.response(model.frame(models[[1]]$formula, data = data))
+  y <- model.response(model.frame(models[[1L]]$formula, data = data))
   
   observed_val_means <- setNames(lapply(times, function(t) {
     setNames(
@@ -160,7 +160,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
     cat("Fitting models...")
   }
   
-  f <- 1
+  f <- 1L
   for (i in seq_along(models)) {
     model <- models[[i]]
     
@@ -182,14 +182,25 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
       
       val_data[[f]] <- d[subset_i,, drop = FALSE]
       val_weights[[f]] <- weights[subset_i]
-      val_coefs[[f]] <- na.omit(marginaleffects::get_coef(fit))
+      val_coefs[[f]] <- na.omit(coef(fit))
+      
+      val_predict_prep[[f]] <- .make_predict_prep(fit, val_data[[f]])
+      
+      val_fits[[f]] <- fit
+      
+      val_groups[[f]] <- setNames(lapply(group_levels, function(g) {
+        which(val_data[[f]][[group_var]] == g)
+      }), group_levels)
 
       #Compute pred error
       
       # Compute prediction errors for each model for each validation period using original coefs
       
       ##Generate predictions on validation data
-      p <- predict(fit, newdata = val_data[[f]], type = "response")
+      # p <- predict(fit, newdata = val_data[[f]], type = "response")
+      p <- .predict_quick(val_coefs[[f]],
+                          val_predict_prep[[f]],
+                          val_fits[[f]]$family$linkinv)
       
       #Unlog if outcome is logged to keep on original scale
       if (model$log) {
@@ -198,7 +209,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
       
       predicted_val_means_i <- setNames(
         vapply(group_levels, function(g) {
-          .wtd_mean(p, val_weights[[f]], val_data[[f]][[group_var]] == g)
+          .wtd_mean(p, val_weights[[f]], val_groups[[f]][[g]])
         }, numeric(1L)),
         group_levels
       )
@@ -206,8 +217,6 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
       for (g in group_levels) {
         apm_arr[t, i, g] <- observed_val_means[[as.character(val_time)]][g] - predicted_val_means_i[g]
       }
-      
-      val_fits[[f]] <- fit
       
       grid[["time_ind"]][f] <- t
       grid[["model"]][f] <- i
@@ -235,7 +244,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   coefs_inds <- .list_ind(val_coefs)
   
   # Compute prediction errors for each model for each validation period for each simulation
-  
+
   #out_mat: all prediction errors; length(times) x length(models) x nsim
   out_mat <- simplify2array(pbapply::pblapply(seq_len(nsim), function(s) {
     
@@ -255,12 +264,13 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
       fit <- val_fits[[f]]
       
       #Compute pred error
-      
-      ##Set simulated coefficient
-      fit <- marginaleffects::set_coef(fit, coefs[coefs_inds[[f]]])
-      
+
       ##Generate predictions on validation data
-      p <- predict(fit, newdata = val_data[[f]], type = "response")
+      # fit[["coefficients"]] <- coefs[coefs_inds[[f]]]
+      # p <- predict(fit, newdata = val_data[[f]], type = "response")
+      p <- .predict_quick(coefs[coefs_inds[[f]]],
+                          val_predict_prep[[f]],
+                          val_fits[[f]]$family$linkinv)
       
       #Unlog if outcome is logged to keep on original scale
       if (models[[i]]$log) {
@@ -269,7 +279,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
       
       predicted_val_means_s_i <- setNames(
         vapply(group_levels, function(g) {
-          .wtd_mean(p, val_weights[[f]], val_data[[f]][[group_var]] == g)
+          .wtd_mean(p, val_weights[[f]], val_groups[[f]][[g]])
         }, numeric(1L)),
         group_levels
       )
@@ -284,7 +294,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   optimal_models <- vapply(seq_len(nsim), function(s) {
     worst_pred_within_model <- {
       if (is.null(dim(out_mat[,, s]))) max(abs(out_mat[,, s]))
-      else apply(abs(out_mat[,, s]), 2, max)
+      else apply(abs(out_mat[,, s]), 2L, max)
     }
     
     which.min(worst_pred_within_model)
@@ -339,21 +349,21 @@ print.apm_pre_fits <- function(x, ...) {
 #' @rdname apm_pre
 #' @exportS3Method summary apm_pre_fits
 summary.apm_pre_fits <- function(object, order = NULL, ...) {
-  out <- data.frame(bma = object$BMA_weights,
+  out <- data.frame(bma = object[["BMA_weights"]],
                     err = apply(abs(object[["pred_errors_diff"]]), 2, max),
-                    row.names = names(object$models))
+                    row.names = names(object[["models"]]))
   
   names(out) <- c("BMA weights", "Max|errors|")
   
   if (!is.null(order)) {
     chk::chk_string(order)
-    order <- match.arg(order, c("weights", "errors"))
+    order <- .match_arg(order, c("weights", "errors"))
     
     if (order == "weights") {
-      out <- out[order(out[[1]], decreasing = TRUE),, drop = FALSE]
+      out <- out[order(out[[1L]], decreasing = TRUE),, drop = FALSE]
     }
     else {
-      out <- out[order(out[[2]]),, drop = FALSE]
+      out <- out[order(out[[2L]]),, drop = FALSE]
     }
   }
   
@@ -365,7 +375,7 @@ summary.apm_pre_fits <- function(object, order = NULL, ...) {
 #' @exportS3Method print summary.apm_pre_fits
 print.summary.apm_pre_fits <- function(x, digits = 3, ...) {
   out <- matrix(NA_character_, nrow = nrow(x),
-                ncol = ncol(x) + 1,
+                ncol = ncol(x) + 1L,
                 dimnames = list(rownames(x),
                                 c(colnames(x), "")))
   
@@ -373,8 +383,8 @@ print.summary.apm_pre_fits <- function(x, digits = 3, ...) {
     out[,i] <- format(round(x[[i]], digits), digits = digits)
   }
   
-  out[,3] <- ""
-  out[which.min(x[[2]]), 3] <- "*"
+  out[,3L] <- ""
+  out[which.min(x[[2L]]), 3L] <- "*"
   
   print.default(out, right = TRUE, quote = FALSE, ...)
   
@@ -382,151 +392,4 @@ print.summary.apm_pre_fits <- function(x, digits = 3, ...) {
   cat("Use `plot()` to plot prediction errors and BMA weights.\n")
   
   invisible(x)
-}
-
-.fit_one_model <- function(mod, weights = NULL, time_var, val_time, family) {
-  #mod: output of .modify_formula_and_data()
-  
-  # Effectively subset without dropping any observations
-  if (is.null(weights)) {
-    weights <- rep(1, nrow(mod$data))
-  }
-  
-  is.na(weights)[mod$data[[time_var]] >= val_time] <- TRUE
-  
-  # Model fitting function; note: need do.call() to correctly process `weights`
-  fit_fun <- {
-    if (identical(family$family, "Negative Binomial"))
-      function(.formula, .data, .family, .weights = NULL) {
-        do.call("glm.nb", list(.formula, data = .data,
-                               weights = .weights,
-                               na.action = "na.exclude"))
-      }
-    else if (isTRUE(all.equal(family, stats::gaussian())))
-      function(.formula, .data, .family, .weights = NULL) {
-        do.call("lm", list(.formula, data = .data,
-                           weights = .weights,
-                           na.action = "na.exclude"))
-      }
-    else
-      function(.formula, .data, .family, .weights = NULL) {
-        do.call("glm", list(.formula, data = .data,
-                            family = .family,
-                            weights = .weights,
-                            na.action = "na.exclude"))
-      }
-  }
-  
-  out <- fit_fun(.formula = mod$formula,
-                 .data = mod$data,
-                 .family = family,
-                 .weights = weights)
-  
-  out$call$data <- quote(.data)
-  out$call$na.action <- NULL
-  out$call$weights <- quote(.weights)
-  if (!identical(family$family, "Negative Binomial") &&
-      !isTRUE(all.equal(family, stats::gaussian()))) {
-    out$call$family <- str2lang(sprintf('%s("%s")', family$family, family$link))
-  }
-  
-  out
-}
-
-.modify_formula_and_data <- function(model, data, group_var, unit_var, time_var) {
-  
-  formula <- model$formula
-  
-  # Create log and lagged variables
-  outcome_name <- as.character(formula[[2]])
-  
-  if (model$time_trend == 1) {
-    formula <- update(formula, sprintf(". ~ . + %s", time_var))
-  }
-  else if (model$time_trend > 0) {
-    formula <- update(formula, sprintf(". ~ . + poly(%s, %s)", time_var, model$time_trend))
-  }
-  
-  # Add interaction with group
-  formula <- update(formula, sprintf(". ~ %s * (.)", group_var))
-  
-  outcome <- NULL
-  # Log outcome if requested
-  if (model$log) {
-    outcome <- model.response(model.frame(formula, data = data))
-    if (min(outcome) <= 0) {
-      chk::err("`log` cannot be `TRUE` when the outcome takes on values of 0 or lower")
-    }
-    
-    formula <- update(formula, log(.) ~ .)
-  }
-  
-  if (model$diff_k > 0 && model$family$link == "log") {
-    if (is.null(outcome)) {
-      outcome <- model.response(model.frame(formula, data = data))
-    }
-    
-    if (min(outcome) <= 0) {
-      chk::err("no model can have a log link and an outcome lag when the outcome takes on values of 0 or lower")
-    }
-  }
-  
-  # Add lagged outcome or offset thereof if requested
-  if (model$lag > 0 || model$diff_k > 0) {
-    # 
-    # if (lag_outcome_name %in% all.vars(formula)) {
-    #     chk::wrn(sprintf("the variable named %s will be replaced. Give this variable a different name before running",
-    #                      lag_outcome_name))
-    # }
-    
-    for (i in seq_len(max(model$diff_k, model$lag))) {
-      if (i > model$lag && i != model$diff_k) next
-      
-      lag_outcome_name <- sprintf("%s_lag_%s", outcome_name, i)
-      
-      lag_i <- data[[outcome_name]]
-      is.na(lag_i)[] <- TRUE
-      
-      beg <- seq_len(i)
-      for (u in levels(data[[unit_var]])) {
-        #We can lag here because data is ordered by time_var already
-        #Note: assumes complete time series for each unit, uses previous value in dataset (ignoring actual
-        #      value of time var)
-        end <- sum(data[[unit_var]] == u) + 1 - seq_len(i)
-        lag_i[data[[unit_var]] == u][-beg] <- data[[outcome_name]][data[[unit_var]] == u][-end]
-      }
-      
-      data[[lag_outcome_name]] <- lag_i
-      
-      if (i <= model$lag) {
-        #Add lag as predictor
-        formula <- {
-          if (model$log) {
-            update(formula, sprintf(". ~ . + log(%s)", lag_outcome_name))
-          }
-          else {
-            update(formula, sprintf(". ~ . + %s", lag_outcome_name))
-          }
-        }
-      }
-      else if (i == model$diff_k) {
-        #Add lag as offset
-        formula <- {
-          if (model$log || model$family$link == "log") {
-            update(formula, sprintf(". ~ . + offset(log(%s))", lag_outcome_name))
-          }
-          else {
-            update(formula, sprintf(". ~ . + offset(%s)", lag_outcome_name))
-          }
-        }
-      }
-    }
-  }
-  
-  # Add unit fixed effects if requested, remove group var main effect
-  if (model$fixef) {
-    formula <- update(formula, sprintf(". ~ . + %s - %s", unit_var, group_var))
-  }
-  
-  list(formula = formula, data = data)
 }

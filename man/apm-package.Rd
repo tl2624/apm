@@ -4,7 +4,7 @@
 \name{apm-package}
 \alias{apm}
 \alias{apm-package}
-\title{apm: What the Package Does (One Line, Title Case)}
+\title{apm: Averaged Prediction Models}
 \description{
 What the package does (one paragraph).
 }
