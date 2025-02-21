@@ -427,7 +427,7 @@ print.summary.apm_est <- function(x, digits = max(3, getOption("digits") - 3), .
 plot.apm_est <- function(x, label = TRUE, size.weights = TRUE, ...) {
   chk::chk_flag(label)
 
-  max_abs_pred_error <- apply(abs(x[["pred_errors"]]), 2L, max)
+  max_abs_pred_errors_diff <- apply(abs(x[["pred_errors_diff"]]), 2L, max)
   est <- x[["atts"]][,1L]
   
   labels <- {
@@ -436,10 +436,10 @@ plot.apm_est <- function(x, label = TRUE, size.weights = TRUE, ...) {
   }
   
   plot_data <- data.frame(estimate = est,
-                          pred_error = max_abs_pred_error[names(est)],
+                          pred_error = max_abs_pred_errors_diff[names(est)],
                           label = labels,
                           weights = x[["BMA_weights"]],
-                          best = seq_along(est) == which.min(max_abs_pred_error[names(est)]))
+                          best = seq_along(est) == which.min(max_abs_pred_errors_diff[names(est)]))
   
   p <- ggplot(plot_data,
               aes(x = .data$pred_error,
