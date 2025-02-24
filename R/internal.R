@@ -56,7 +56,7 @@
   formula <- model$formula
   
   # Create log and lagged variables
-  outcome_name <- as.character(formula[[2]])
+  outcome_name <- as.character(formula[[2L]])
   
   if (model$time_trend == 1) {
     formula <- update(formula, sprintf(". ~ . + %s", time_var))
@@ -105,13 +105,13 @@
       lag_i <- data[[outcome_name]]
       is.na(lag_i)[] <- TRUE
       
-      beg <- seq_len(i)
+      beginning <- seq_len(i)
       for (u in levels(data[[unit_var]])) {
         #We can lag here because data is ordered by time_var already
         #Note: assumes complete time series for each unit, uses previous value in dataset (ignoring actual
         #      value of time var)
-        end <- sum(data[[unit_var]] == u) + 1 - seq_len(i)
-        lag_i[data[[unit_var]] == u][-beg] <- data[[outcome_name]][data[[unit_var]] == u][-end]
+        ending <- sum(data[[unit_var]] == u) + 1 - seq_len(i)
+        lag_i[data[[unit_var]] == u][-beginning] <- data[[outcome_name]][data[[unit_var]] == u][-ending]
       }
       
       data[[lag_outcome_name]] <- lag_i
@@ -158,14 +158,16 @@
                    na.action = na.pass, 
                    xlev = fit$xlevels)
   
-  if (!is.null(cl <- attr(Terms, "dataClasses"))) {
+  cl <- attr(Terms, "dataClasses")
+  if (!is.null(cl)) {
     .checkMFClasses(cl, m)
   }
   
   X <- model.matrix(Terms, m, contrasts.arg = fit$contrasts)
   
   offset <- model.offset(m)
-  if (!is.null(addO <- fit$call$offset)) {
+  addO <- fit$call$offset
+  if (!is.null(addO)) {
     addO <- eval(addO, newdata, environment(tt))
     offset <- if (length(offset) > 0L) offset + addO else addO
   }

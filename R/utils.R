@@ -1,46 +1,41 @@
 #Fast (weighted) mean, optionally with subset
 .wtd_mean <- function(x, w = NULL, subset = NULL) {
-  if (is.null(subset)) {
+  if (!is.null(subset)) {
     if (is.null(w)) {
-      sum(x) / length(x)
+      return(.wtd_mean(x[subset]))
     }
-    else {
-      sum(x * w) / sum(w)
-    }
+    
+    return(.wtd_mean(x[subset], w = w[subset]))
+  }
+  
+  if (is.null(w)) {
+    sum(x) / length(x)
   }
   else {
-    x <- x[subset]
-    if (is.null(w)) {
-      sum(x) / length(x)
-    }
-    else {
-      w <- w[subset]
-      sum(x * w) / sum(w)
-    }
+    sum(x * w) / sum(w)
   }
 }
 
 .wtd_sd <- function(x, w = NULL, subset = NULL) {
-  if (is.null(subset)) {
+  if (!is.null(subset)) {
     if (is.null(w)) {
-      sqrt(sum((x - .wtd_mean(x))^2)/(length(x) - 1))
+      return(.wtd_sd(x[subset]))
     }
-    else {
-      sum_w <- sum(w)
-      sqrt((sum_w / (sum_w^2 - sum(w^2))) * sum(w * (x - .wtd_mean(x, w))^2))
-    }
+    
+    return(.wtd_sd(x[subset], w = w[subset]))
+  }
+  
+  if (is.null(w)) {
+    sqrt(sum((x - .wtd_mean(x))^2) / (length(x) - 1))
   }
   else {
-    x <- x[subset]
-    if (is.null(w)) {
-      sqrt(sum((x - .wtd_mean(x))^2)/(length(x) - 1))
-    }
-    else {
-      w <- w[subset]
-      sum_w <- sum(w)
-      sqrt((sum_w / (sum_w^2 - sum(w^2))) * sum(w * (x - .wtd_mean(x, w))^2))
-    }
+    sum_w <- sum(w)
+    sqrt((sum_w / (sum_w^2 - sum(w^2))) * sum(w * (x - .wtd_mean(x, w))^2))
   }
+}
+
+.colMax <- function(x, na.rm = TRUE) {
+  apply(x, 2L, max, na.rm = na.rm)
 }
 
 # Create a list indexing position of unlist elements of list x
@@ -108,7 +103,7 @@
   out <- matrix(0, nrow = length(u), ncol = ncol(x),
                 dimnames = list(u, colnames(x)))
   
-  out[rownames(x),] <- x
+  out[rownames(x), ] <- x
   
   out
 }
@@ -124,7 +119,8 @@
   arg.name <- deparse1(substitute(arg), width.cutoff = 500L)
   
   if (missing(choices)) {
-    formal.args <- formals(sys.function(sysP <- sys.parent()))
+    sysP <- sys.parent()
+    formal.args <- formals(sys.function(sysP))
     choices <- eval(formal.args[[as.character(substitute(arg))]],
                     envir = sys.frame(sysP))
   }
@@ -179,7 +175,7 @@
   }
   
   if (length(and.or) == 0L || isFALSE(and.or)) {
-    out <- paste(word.list, collapse = ", ")
+    out <- toString(word.list)
   }
   else {
     and.or <- .match_arg(and.or, c("and", "or"))
@@ -192,7 +188,7 @@
     }
     else {
       out <- sprintf("%s, %s %s",
-                     paste(word.list[-L], collapse = ", "),
+                     toString(word.list[-L]),
                      and.or,
                      word.list[L])
     }

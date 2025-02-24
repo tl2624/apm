@@ -64,13 +64,30 @@ robustness_bound <- function(object, level = .95) {
   att_inds <- seq_along(object[["BMA_weights"]])
   
   atts <- unname(object[["boot_out"]][["t0"]][att_inds])
-  atts_boot <- object[["boot_out"]][["t"]][,att_inds, drop = FALSE]
+  atts_boot <- object[["boot_out"]][["t"]][, att_inds, drop = FALSE]
   
   BMA_att_boot <- atts_boot %*% object[["BMA_weights"]]
   
+  ss <- summary(object, level = level, M = 0)
+  
+  if (ss["ATT", "Estimate"] > 0) {
+    if (ss["ATT", "CI low"] < 0) {
+      return(NA_real_)
+    }
+    
+    b <- "lower"
+  }
+  else {
+    if (ss["ATT", "CI high"] > 0) {
+      return(NA_real_)
+    }
+    
+    b <- "upper"
+  }
+  
   .make_bounds <- function(m, b = "lower") {
     me <- m * unname(object[["boot_out"]][["t0"]][-att_inds])
-    me_boot <- m * object[["boot_out"]][["t"]][,-att_inds, drop = FALSE]
+    me_boot <- m * object[["boot_out"]][["t"]][, -att_inds, drop = FALSE]
     
     BMA_me <- sum(object[["BMA_weights"]] * me)
     BMA_me_boot <- me_boot %*% object[["BMA_weights"]]
@@ -97,25 +114,6 @@ robustness_bound <- function(object, level = .95) {
       
       drop(BMA_att_ub + sqrt(BMA_ub_var) * qnorm(1 - (1 - level) / 2))
     }
-  }
-  
-  ATT <- object[["BMA_att"]]["ATT"]
-  
-  ss <- summary(object, level = level, M = 0)
-  
-  if (ss["ATT", "Estimate"] > 0) {
-    if (ss["ATT", "CI low"] < 0) {
-      return(NA_real_)
-    }
-    
-    b <- "lower"
-  }
-  else {
-    if (ss["ATT", "CI high"] > 0) {
-      return(NA_real_)
-    }
-    
-    b <- "upper"
   }
 
   u <- uniroot(.make_bounds, lower = 0, upper = 10, b = b,

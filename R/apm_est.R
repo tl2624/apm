@@ -111,18 +111,17 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
   models <- fits$models
   
   #Remove models that won't contribute
-  if (!all_models) {
+  if (all_models) {
+    BMA_weights <- fits$BMA_weights
+  }
+  else {
     models <- models[fits$BMA_weights > 0]
     BMA_weights <- fits$BMA_weights[fits$BMA_weights > 0]
   }
-  else {
-    BMA_weights <- fits$BMA_weights
-  }
   
-  mods <- lapply(models, function(model) {
-    .modify_formula_and_data(model, data, group_var,
-                             unit_var, time_var)
-  })
+  mods <- lapply(models, .modify_formula_and_data,
+                 data = data, group_var = group_var,
+                 unit_var = unit_var, time_var = time_var)
   
   #FWB for ATTs
   .boot_fun <- function(.data, .weights, ...) {
@@ -132,30 +131,30 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
       times <- c(times, val_times)
     }
     
-    pred_error_mat <- matrix(NA_real_,
-                             nrow = length(times),
-                             ncol = length(models),
-                             dimnames = list(times,
-                                             names(models)))
+    pred_error_diffs_mat <- matrix(NA_real_,
+                                   nrow = length(times),
+                                   ncol = length(models),
+                                   dimnames = list(times,
+                                                   names(models)))
     
-    for (i in seq_along(models)) {
-      model <- models[[i]]
+    for (mi in seq_along(models)) {
+      model <- models[[mi]]
       
-      d <- mods[[i]]$data
+      d <- mods[[mi]]$data
       
-      for (t in seq_along(times)) {
+      for (ti in seq_along(times)) {
         
-        time <- times[t]
+        time <- times[ti]
         
         subset_i_v <- which(d[[time_var]] == time)
         
-        .val_data_i_v <- d[subset_i_v,, drop = FALSE]
+        .val_data_i_v <- d[subset_i_v, , drop = FALSE]
         .val_weights_i_v <- .weights[subset_i_v] * weights[subset_i_v]
         .val_groups_i_v <- setNames(lapply(group_levels, function(g) {
           which(.val_data_i_v[[group_var]] == g)
         }), group_levels)
         
-        y <- model.response(model.frame(update(mods[[i]]$formula, . ~ 1),
+        y <- model.response(model.frame(update(mods[[mi]]$formula, . ~ 1),
                                         data = .val_data_i_v))
         
         if (model$log) {
@@ -170,7 +169,7 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
         )
         
         # Compute prediction errors for each model for each validation period
-        fit <- .fit_one_model(mods[[i]],
+        fit <- .fit_one_model(mods[[mi]],
                               weights = weights * .weights,
                               time_var = time_var,
                               val_time = time,
@@ -196,21 +195,21 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
           group_levels
         )
         
-        pred_error_mat[t, i] <- (observed_val_means_i["1"] - observed_val_means_i["0"]) -
+        pred_error_diffs_mat[ti, mi] <- (observed_val_means_i["1"] - observed_val_means_i["0"]) -
           (predicted_val_means_i["1"] - predicted_val_means_i["0"])
       }
     }
     
     #ATT is pred error for post_time
-    .atts <- pred_error_mat[1,]
+    .atts <- pred_error_diffs_mat[1L, ]
     
     if (M == 0) {
       return(.atts)
     }
     
-    .max_abs_pred_errors <- apply(abs(pred_error_mat[-1, , drop = FALSE]), 2L, max)
+    .max_abs_pred_error_diffs <- .colMax(abs(pred_error_diffs_mat[-1L, , drop = FALSE]))
     
-    c(.atts, .max_abs_pred_errors)
+    c(.atts, .max_abs_pred_error_diffs)
   }
   
   boot_out <- fwb::fwb(data = data,
@@ -224,7 +223,7 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
   
   # ATT
   atts <- unname(boot_out[["t0"]][att_inds])
-  atts_boot <- boot_out[["t"]][,att_inds, drop = FALSE]
+  atts_boot <- boot_out[["t"]][, att_inds, drop = FALSE]
   
   BMA_att <- sum(BMA_weights * atts)
   BMA_att_boot <- atts_boot %*% BMA_weights
@@ -244,13 +243,13 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
               post_time = post_time,
               observed_means = fits$observed_means,
               pred_errors = fits$pred_errors,
-              pred_errors_diff = fits$pred_errors_diff,
+              pred_error_diffs = fits$pred_error_diffs,
               BMA_weights = BMA_weights,
               boot_out = boot_out)
   
   if (M > 0) {
     me <- M * unname(boot_out[["t0"]][-att_inds])
-    me_boot <- M * boot_out[["t"]][,-att_inds, drop = FALSE]
+    me_boot <- M * boot_out[["t"]][, -att_inds, drop = FALSE]
     
     BMA_me <- sum(BMA_weights * me)
     BMA_me_boot <- me_boot %*% BMA_weights
@@ -307,8 +306,8 @@ print.apm_est <- function(x, ...) {
   cat(sprintf(" - grouping variable: %s\n", attr(x, "group_var")))
   cat(sprintf(" - unit variable: %s\n", attr(x, "unit_var")))
   cat(sprintf(" - time variable: %s\n", attr(x, "time_var")))
-  cat(sprintf("   - validation times: %s\n", paste(x[["val_times"]], collapse = ", ")))
-  cat(sprintf("   - post-treatment time: %s\n", paste(x[["post_time"]], collapse = ", ")))
+  cat(sprintf("   - validation times: %s\n", toString(x[["val_times"]])))
+  cat(sprintf("   - post-treatment time: %s\n", toString(x[["post_time"]])))
   cat(sprintf(" - sensitivity parameter (M): %s\n", x[["M"]]))
   cat(sprintf(" - bootstrap replications: %s\n", nrow(x[["boot_out"]][["t"]])))
   cat("\n")
@@ -346,13 +345,13 @@ summary.apm_est <- function(object, level = .95, M = NULL, ...) {
     M <- M[M > 0]
   }
   
-  if (length(M) > 0) {
+  if (length(M) > 0L) {
     if (object[["M"]] == 0) {
       chk::err("`M` cannot be nonzero when `M` was 0 in the call to `apm_est()`")
     }
     
     res2 <- do.call("rbind", lapply(M, function(m) {
-      res_m <- as.data.frame(matrix(NA_real_, nrow = 1, ncol = ncol(res)))
+      res_m <- as.data.frame(matrix(NA_real_, nrow = 1L, ncol = ncol(res)))
       
       if (m == object[["M"]]) {
         BMA_att_lb <- object[["BMA_att"]]["LB"]
@@ -365,12 +364,12 @@ summary.apm_est <- function(object, level = .95, M = NULL, ...) {
         att_inds <- seq_along(object[["BMA_weights"]])
         
         atts <- unname(object[["boot_out"]][["t0"]][att_inds])
-        atts_boot <- object[["boot_out"]][["t"]][,att_inds, drop = FALSE]
+        atts_boot <- object[["boot_out"]][["t"]][, att_inds, drop = FALSE]
         
         BMA_att_boot <- atts_boot %*% object[["BMA_weights"]]
         
         me <- m * unname(object[["boot_out"]][["t0"]][-att_inds])
-        me_boot <- m * object[["boot_out"]][["t"]][,-att_inds, drop = FALSE]
+        me_boot <- m * object[["boot_out"]][["t"]][, -att_inds, drop = FALSE]
         
         BMA_me <- sum(object[["BMA_weights"]] * me)
         BMA_me_boot <- me_boot %*% object[["BMA_weights"]]
@@ -397,7 +396,7 @@ summary.apm_est <- function(object, level = .95, M = NULL, ...) {
       
       names(res_m) <- names(res)
       
-      rownames(res_m) <- sprintf("M = %s", round(m, 2))
+      rownames(res_m) <- sprintf("M = %s", round(m, 2L))
       
       res_m
     }))
@@ -411,9 +410,9 @@ summary.apm_est <- function(object, level = .95, M = NULL, ...) {
 }
 
 #' @exportS3Method print summary.apm_est
-print.summary.apm_est <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+print.summary.apm_est <- function(x, digits = max(3L, getOption("digits") - 3L), ...) {
   printCoefmat(x, digits = digits, cs.ind = 1:4,
-               tst.ind = 5,
+               tst.ind = 5L,
                P.values = TRUE,
                has.Pvalue = TRUE,
                na.print = ".",
@@ -426,9 +425,9 @@ print.summary.apm_est <- function(x, digits = max(3, getOption("digits") - 3), .
 #' @rdname apm_est
 plot.apm_est <- function(x, label = TRUE, size.weights = TRUE, ...) {
   chk::chk_flag(label)
-
-  max_abs_pred_error <- apply(abs(x[["pred_errors"]]), 2L, max)
-  est <- x[["atts"]][,1L]
+  
+  max_abs_pred_error_diffs <- .colMax(abs(x[["pred_errors_diffs"]]))
+  est <- x[["atts"]][, 1L]
   
   labels <- {
     if (label) rownames(x[["atts"]])
@@ -436,10 +435,10 @@ plot.apm_est <- function(x, label = TRUE, size.weights = TRUE, ...) {
   }
   
   plot_data <- data.frame(estimate = est,
-                          pred_error = max_abs_pred_error[names(est)],
+                          pred_error = max_abs_pred_error_diffs[names(est)],
                           label = labels,
                           weights = x[["BMA_weights"]],
-                          best = seq_along(est) == which.min(max_abs_pred_error[names(est)]))
+                          best = seq_along(est) == which.min(max_abs_pred_error_diffs[names(est)]))
   
   p <- ggplot(plot_data,
               aes(x = .data$pred_error,

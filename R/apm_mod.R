@@ -58,7 +58,7 @@ apm_mod <- function(formula_list, family = "gaussian", lag = 0L, diff_k = 0L,
   
   formula_list <- unique(formula_list)
   
-  if (any(lengths(formula_list) < 3)) {
+  if (any(lengths(formula_list) < 3L)) {
     chk::err("all formulas in `formula_list` must have left-hand-side (outcome) variable")
   }
 
@@ -145,14 +145,14 @@ apm_mod <- function(formula_list, family = "gaussian", lag = 0L, diff_k = 0L,
       }, logical(1L))
       
       if (!all(identity_links)) {
-        grid <- grid[grid$family %in% which(identity_links) | !log[grid$log],, drop = FALSE]
+        grid <- grid[grid$family %in% which(identity_links) | !log[grid$log], , drop = FALSE]
       }
     }
   }
   
   if (any(diff_k > 0) && any(lag > 0)) {
     #Drop combinations where diff_k is less than lag because those are equivalent to having no diff_k
-    grid <- grid[diff_k[grid$diff_k] == 0 | diff_k[grid$diff_k] > lag[grid$lag],, drop = FALSE]
+    grid <- grid[diff_k[grid$diff_k] == 0 | diff_k[grid$diff_k] > lag[grid$lag], , drop = FALSE]
   }
   
   out <- lapply(seq_len(nrow(grid)), function(i) {
@@ -184,7 +184,7 @@ print.apm_models <- function(x, ...) {
     cat(sprintf("family: %s(link = %s)\n",
                 x[[i]]$family$family,
                 .add_quotes(x[[i]]$family$link, 2L)))
-    cat(sprintf("outcome lag: %s\n", if (x[[i]]$lag == 0) "none" else paste(seq_len(x[[i]]$lag), collapse = ", ")))
+    cat(sprintf("outcome lag: %s\n", if (x[[i]]$lag == 0) "none" else toString(seq_len(x[[i]]$lag))))
     cat(sprintf("outcome diff: %s\n", if (x[[i]]$diff_k == 0) "none" else x[[i]]$diff_k))
     cat(sprintf("log outcome: %s\n", if (x[[i]]$log) "yes" else "no"))
     cat(sprintf("time trend: %s\n",
@@ -232,7 +232,7 @@ c.apm_models <- function(..., recursive = TRUE) {
 .name_mods <- function(models) {
   ff <- unlist(lapply(models, function(m) {
     tt <- terms(m$formula)
-    if (length(attr(tt, "term.labels")) > 0) {
+    if (length(attr(tt, "term.labels")) > 0L) {
       deparse1(tt)
     }
   }))
@@ -278,7 +278,7 @@ c.apm_models <- function(..., recursive = TRUE) {
     
     formula <- terms(model$formula)
     
-    if (length(attr(formula, "term.labels")) > 0) {
+    if (length(attr(formula, "term.labels")) > 0L) {
       n <- {
         if (id_models) sprintf("baseline model %s", match(deparse1(formula), ff))
         else "baseline model"
@@ -326,8 +326,7 @@ c.apm_models <- function(..., recursive = TRUE) {
     n <- paste(n, collapse = " + ")
     
     if (length(n2) > 0) {
-      n <- sprintf("%s (%s)", n,
-                   paste(n2, collapse = ", "))
+      n <- sprintf("%s (%s)", n, toString(n2))
     }
     
     n

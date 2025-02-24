@@ -94,7 +94,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   data[[unit_var]] <- factor(data[[unit_var]])
   
   #Order data by unit_var and time_var
-  data <- data[order(data[[unit_var]], data[[time_var]]),, drop = FALSE]
+  data <- data[order(data[[unit_var]], data[[time_var]]), , drop = FALSE]
   
   chk::chk_not_missing(val_times, "`val_times`")
   chk::chk_numeric(val_times)
@@ -152,9 +152,9 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
     )
   }), times)
   
-  apm_arr <- array(NA_real_,
-                   dim = c(length(val_times), length(models), 2L),
-                   dimnames = list(val_times, names(models), group_levels))
+  pred_errors_array <- array(NA_real_,
+                           dim = c(length(val_times), length(models), length(group_levels)),
+                           dimnames = list(val_times, names(models), group_levels))
   
   if (verbose) {
     cat("Fitting models...")
@@ -180,7 +180,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
       
       subset_i <- which(d[[time_var]] == val_time)
       
-      val_data[[f]] <- d[subset_i,, drop = FALSE]
+      val_data[[f]] <- d[subset_i, , drop = FALSE]
       val_weights[[f]] <- weights[subset_i]
       val_coefs[[f]] <- na.omit(coef(fit))
       
@@ -191,7 +191,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
       val_groups[[f]] <- setNames(lapply(group_levels, function(g) {
         which(val_data[[f]][[group_var]] == g)
       }), group_levels)
-
+      
       #Compute pred error
       
       # Compute prediction errors for each model for each validation period using original coefs
@@ -214,8 +214,10 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
         group_levels
       )
       
+      val_time_c <- as.character(val_time)
+      
       for (g in group_levels) {
-        apm_arr[t, i, g] <- observed_val_means[[as.character(val_time)]][g] - predicted_val_means_i[g]
+        pred_errors_array[t, i, g] <- observed_val_means[[val_time_c]][g] - predicted_val_means_i[g]
       }
       
       grid[["time_ind"]][f] <- t
@@ -225,7 +227,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   }
   
   #Difference in average prediction errors
-  apm_mat <- apm_arr[,, "1"] - apm_arr[,, "0"]
+  pred_error_diffs_mat <- pred_errors_array[, , "1"] - pred_errors_array[, , "0"]
   
   #Simulate to get BMA weights
   
@@ -244,27 +246,25 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   coefs_inds <- .list_ind(val_coefs)
   
   # Compute prediction errors for each model for each validation period for each simulation
-
-  #out_mat: all prediction errors; length(times) x length(models) x nsim
-  out_mat <- simplify2array(pbapply::pblapply(seq_len(nsim), function(s) {
+  
+  #out_mat: all prediction error diffs; length(times) x length(models) x nsim
+  pred_error_diffs_sim <- simplify2array(pbapply::pblapply(seq_len(nsim), function(s) {
     
     mat <- matrix(NA_real_,
                   nrow = length(val_times),
                   ncol = length(models),
                   dimnames = list(val_times, names(models)))
     
-    coefs <- sim_coefs[s,]
+    coefs <- sim_coefs[s, ]
     
     for (f in seq_len(nrow(grid))) {
-      i <- grid$model[f]
-      t <- grid$time_ind[f]
+      mi <- grid$model[f]
+      ti <- grid$time_ind[f]
       
-      val_time <- val_times[t]
-      
-      fit <- val_fits[[f]]
+      val_time_c <- as.character(val_times[ti])
       
       #Compute pred error
-
+      
       ##Generate predictions on validation data
       # fit[["coefficients"]] <- coefs[coefs_inds[[f]]]
       # p <- predict(fit, newdata = val_data[[f]], type = "response")
@@ -273,7 +273,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
                           val_fits[[f]]$family$linkinv)
       
       #Unlog if outcome is logged to keep on original scale
-      if (models[[i]]$log) {
+      if (models[[mi]]$log) {
         p <- exp(p)
       }
       
@@ -283,8 +283,8 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
         }, numeric(1L)),
         group_levels
       )
-
-      mat[t, i] <- (observed_val_means[[as.character(val_time)]]["1"] - observed_val_means[[as.character(val_time)]]["0"]) -
+      
+      mat[ti, mi] <- (observed_val_means[[val_time_c]]["1"] - observed_val_means[[val_time_c]]["0"]) -
         (predicted_val_means_s_i["1"] - predicted_val_means_s_i["0"])
     }
     
@@ -293,8 +293,8 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   
   optimal_models <- vapply(seq_len(nsim), function(s) {
     worst_pred_within_model <- {
-      if (is.null(dim(out_mat[,, s]))) max(abs(out_mat[,, s]))
-      else apply(abs(out_mat[,, s]), 2L, max)
+      if (is.null(dim(pred_error_diffs_sim[, , s]))) max(abs(pred_error_diffs_sim[, , s]))
+      else .colMax(abs(pred_error_diffs_sim[, , s]))
     }
     
     which.min(worst_pred_within_model)
@@ -318,8 +318,8 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
                data = data,
                weights = weights,
                observed_means = observed_means,
-               pred_errors = apm_arr,
-               pred_errors_diff = apm_mat,
+               pred_errors = pred_errors_array,
+               pred_error_diffs = pred_error_diffs_mat,
                BMA_weights = BMA_weights,
                nsim = nsim)
   
@@ -339,7 +339,7 @@ print.apm_pre_fits <- function(x, ...) {
   cat(sprintf(" - grouping variable: %s\n", attr(x, "group_var")))
   cat(sprintf(" - unit variable: %s\n", attr(x, "unit_var")))
   cat(sprintf(" - time variable: %s\n", attr(x, "time_var")))
-  cat(sprintf("   - validation times: %s\n", paste(x[["val_times"]], collapse = ", ")))
+  cat(sprintf("   - validation times: %s\n", toString(x[["val_times"]])))
   cat(sprintf(" - number of models compared: %s\n", length(x[["models"]])))
   cat(sprintf(" - number of simulation iterations: %s\n", x[["nsim"]]))
   cat("\n")
@@ -350,7 +350,7 @@ print.apm_pre_fits <- function(x, ...) {
 #' @exportS3Method summary apm_pre_fits
 summary.apm_pre_fits <- function(object, order = NULL, ...) {
   out <- data.frame(bma = object[["BMA_weights"]],
-                    err = apply(abs(object[["pred_errors_diff"]]), 2, max),
+                    err = .colMax(abs(object[["pred_error_diffs"]])),
                     row.names = names(object[["models"]]))
   
   names(out) <- c("BMA weights", "Max|errors|")
@@ -360,10 +360,10 @@ summary.apm_pre_fits <- function(object, order = NULL, ...) {
     order <- .match_arg(order, c("weights", "errors"))
     
     if (order == "weights") {
-      out <- out[order(out[[1L]], decreasing = TRUE),, drop = FALSE]
+      out <- out[order(out[[1L]], decreasing = TRUE), , drop = FALSE]
     }
     else {
-      out <- out[order(out[[2L]]),, drop = FALSE]
+      out <- out[order(out[[2L]]), , drop = FALSE]
     }
   }
   
@@ -380,10 +380,10 @@ print.summary.apm_pre_fits <- function(x, digits = 3, ...) {
                                 c(colnames(x), "")))
   
   for (i in seq_along(x)) {
-    out[,i] <- format(round(x[[i]], digits), digits = digits)
+    out[, i] <- format(round(x[[i]], digits), digits = digits)
   }
   
-  out[,3L] <- ""
+  out[, 3L] <- ""
   out[which.min(x[[2L]]), 3L] <- "*"
   
   print.default(out, right = TRUE, quote = FALSE, ...)

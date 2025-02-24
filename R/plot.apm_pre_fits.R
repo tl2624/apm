@@ -59,13 +59,13 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4L, clip_a
   type <- .match_arg(type, c("weights", "errors", "predict", "corrected"))
   
   if (length(x[["models"]]) != dim(x[["pred_errors"]])[2L] ||
-      length(x[["models"]]) != dim(x[["pred_errors_diff"]])[2L] ||
+      length(x[["models"]]) != dim(x[["pred_error_diffs"]])[2L] ||
       length(x[["models"]]) != length(x[["BMA_weights"]])) {
     chk::err("the `apm_pre_fit` object appears to be malformed")
   }
   
   dimnames(x[["pred_errors"]])[[2L]] <- names(x[["models"]])
-  dimnames(x[["pred_errors_diff"]])[[2L]] <- names(x[["models"]])
+  dimnames(x[["pred_error_diffs"]])[[2L]] <- names(x[["models"]])
   
   if (type == "weights") {
     
@@ -89,7 +89,7 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4L, clip_a
     
     df <- x[["grid"]]
     
-    if (nrow(df) != length(x[["pred_errors_diff"]])) {
+    if (nrow(df) != length(x[["pred_error_diffs"]])) {
       chk::err("the number of models implied to have been fit by the input object's `grid` component does not equal the the number of average prediction errors calculated, indicating a malformed `apm_pre_fit` object")
     }
     
@@ -97,10 +97,10 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4L, clip_a
       chk::err("the number of model specifications listed in the input object's `grid` component does not equal the the number of model specifications present, indicating a malformed `apm_pre_fit` object")
     }
     
-    df$pred_errors_diff <- as.vector(x[["pred_errors_diff"]])
+    df$pred_error_diffs <- as.vector(x[["pred_error_diffs"]])
     
     if (abs) {
-      df$pred_errors_diff <- abs(df$pred_errors_diff)
+      df$pred_error_diffs <- abs(df$pred_error_diffs)
     }
     
     df$time <- factor(df$time_ind, levels = seq_along(x$val_times),
@@ -112,10 +112,10 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4L, clip_a
     df$is_max <- factor(1, levels = 1:2, labels = c("no", "yes"))
     
     for (j in levels(df$model)) {
-      df$is_max[df$model == j][which.max(df$pred_errors_diff[df$model == j])] <- "yes"
+      df$is_max[df$model == j][which.max(df$pred_error_diffs[df$model == j])] <- "yes"
     }
     
-    max_abs_pred_error <- apply(abs(x[["pred_errors_diff"]]), 2L, max)
+    max_abs_pred_error <- .colMax(abs(x[["pred_error_diffs"]]))
     
     strip_cols <- rep.int("white", length(x$models))
     strip_cols[which.min(max_abs_pred_error)] <- "gray"
@@ -125,7 +125,7 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4L, clip_a
     #Adjust plot to accommodate extreme outliers
     p <- ggplot(df) +
       geom_col(aes(x = as.numeric(.data$time),
-                   y = .data$pred_errors_diff,
+                   y = .data$pred_error_diffs,
                    fill = .data$is_max),
                width = .96) +
       geom_hline(yintercept = 0) +
@@ -141,9 +141,9 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4L, clip_a
       theme_bw() +
       theme(axis.text.x = element_text(angle = 90, vjust = .5))
     
-    pe_std <- abs(df[["pred_errors_diff"]] - median(df[["pred_errors_diff"]])) / mad(df[["pred_errors_diff"]])
+    pe_std <- abs(df[["pred_error_diffs"]] - median(df[["pred_error_diffs"]])) / mad(df[["pred_error_diffs"]])
     if (any(pe_std > clip_at)) {
-      ul <- max(df[["pred_errors_diff"]][pe_std <= clip_at])
+      ul <- max(df[["pred_error_diffs"]][pe_std <= clip_at])
       ylim <- c(0, ul)
       p <- p + scale_y_continuous(expand = expansion()) +
         coord_cartesian(ylim = ylim)
@@ -165,7 +165,7 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4L, clip_a
     }
     
     if (any(model == ".optimal")) {
-      model[model == ".optimal"] <- names(x[["models"]])[which.min(apply(abs(x[["pred_errors_diff"]]), 2L, max))]
+      model[model == ".optimal"] <- names(x[["models"]])[which.min(.colMax(abs(x[["pred_error_diffs"]])))]
     }
     
     model <- unique(model)
@@ -230,7 +230,7 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4L, clip_a
     }
     
     if (any(model == ".optimal")) {
-      model[model == ".optimal"] <- names(x[["models"]])[which.min(apply(abs(x[["pred_errors_diff"]]), 2L, max))]
+      model[model == ".optimal"] <- names(x[["models"]])[which.min(.colMax(abs(x[["pred_error_diffs"]])))]
     }
     
     model <- unique(model)
@@ -274,4 +274,3 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4L, clip_a
   
   p
 }
-

@@ -7,8 +7,8 @@ vcovSUEST <- function(fits, cluster = NULL) {
     names(fits) <- paste0("fit_", seq_along(fits))
   }
   
-  rownames <- lapply(fits, function(x) rownames(naresid(x$na.action, model.matrix(x))))
-  u <- unique(unlist(rownames, use.names = FALSE))
+  rn <- lapply(fits, function(x) rownames(naresid(x$na.action, model.matrix(x))))
+  u <- unique(unlist(rn, use.names = FALSE))
   
   if (!is.null(cluster)) {
     if (inherits(cluster, "formula")) {
@@ -20,7 +20,7 @@ vcovSUEST <- function(fits, cluster = NULL) {
     }
     
     for (i in seq_along(cluster_f)) {
-      cluster_f[[i]] <- .fill_vec(u, setNames(cluster_f[[i]], rownames[[1L]]))
+      cluster_f[[i]] <- .fill_vec(u, setNames(cluster_f[[i]], rn[[1L]]))
     }
     
     if (inherits(cluster, "formula")) {
@@ -30,7 +30,7 @@ vcovSUEST <- function(fits, cluster = NULL) {
         
         
         for (i in seq_along(cluster_f)) {
-          cluster_f[[i]] <- .fill_vec(u, setNames(cluster_fi[[i]], rownames[[f]]))
+          cluster_f[[i]] <- .fill_vec(u, setNames(cluster_fi[[i]], rn[[f]]))
         }
       }
     }
@@ -73,7 +73,7 @@ vcovSUEST <- function(fits, cluster = NULL) {
       ef_i[is.na(ef_i)] <- 0
     }
     
-    rownames(ef_i) <- rownames[[i]]
+    rownames(ef_i) <- rn[[i]]
     
     ef_i <- .fill_mat(u, ef_i)
     
@@ -99,7 +99,7 @@ vcovSUEST <- function(fits, cluster = NULL) {
     #Usual within-model HC0 vcov
     S <- 0
     for (u in seq_along(clu)) {
-      adj <- g[[i]][u]/(g[[i]][u] - 1)
+      adj <- g[[i]][u] / (g[[i]][u] - 1)
       S <- S + sign[u] * adj * crossprod(ef[[i]][[u]])
     }
     
@@ -110,7 +110,7 @@ vcovSUEST <- function(fits, cluster = NULL) {
       
       S <- 0
       for (u in seq_along(clu)) {
-        adj <- sqrt(g[[i]][u]/(g[[i]][u] - 1)) * sqrt(g[[j]][u]/(g[[j]][u] - 1))
+        adj <- sqrt(g[[i]][u] / (g[[i]][u] - 1)) * sqrt(g[[j]][u] / (g[[j]][u] - 1))
         
         S <- S + sign[u] * adj * crossprod(ef[[i]][[u]], ef[[j]][[u]])
       }
@@ -126,7 +126,7 @@ vcovSUEST <- function(fits, cluster = NULL) {
 
 #Quickly get bread matrix; for non-lm and nonglm objects, uses sandwich::bread()
 .bread <- function(x) {
-  if (!class(x)[1] %in% c("lm", "glm")) {
+  if (!class(x)[1L] %in% c("lm", "glm")) {
     return(sandwich::bread(x))
   }
   
