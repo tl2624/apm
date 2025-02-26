@@ -4,7 +4,7 @@
   
   # Effectively subset without dropping any observations
   if (is.null(weights)) {
-    weights <- rep(1, nrow(mod$data))
+    weights <- rep.int(1, nrow(mod$data))
   }
   
   is.na(weights)[mod$data[[time_var]] >= val_time] <- TRUE
@@ -15,21 +15,24 @@
       function(.formula, .data, .family, .weights = NULL) {
         do.call("glm.nb", list(.formula, data = .data,
                                weights = .weights,
-                               na.action = "na.exclude"))
+                               na.action = "na.exclude",
+                               x = TRUE, y = TRUE))
       }
-    else if (identical(family, stats::gaussian(),
-                       ignore.environment = TRUE))
+    else if (identical(family$family, "gaussian") &&
+             identical(family$link, "identity"))
       function(.formula, .data, .family, .weights = NULL) {
         do.call("lm", list(.formula, data = .data,
                            weights = .weights,
-                           na.action = "na.exclude"))
+                           na.action = "na.exclude",
+                           x = TRUE, y = TRUE))
       }
     else 
       function(.formula, .data, .family, .weights = NULL) {
         out <- do.call("glm", list(.formula, data = .data,
                             family = .family,
                             weights = .weights,
-                            na.action = "na.exclude"))
+                            na.action = "na.exclude",
+                            x = TRUE, y = TRUE))
         
         out$call$family <- str2lang(sprintf('%s("%s")',
                                             .family$family,
@@ -193,4 +196,44 @@
   }
   
   linkinv(eta)
+}
+
+.refit_with_weights <- function(fit, weights) {
+  if (length(fit$na.action) > 0) {
+    weights <- weights[-fit$na.action]
+  }
+  
+  if (class(fit)[1L] == "lm") {
+    x <- model.matrix(fit)
+    y <- {
+      if (is.null(fit[["y"]])) model.response(model.frame(fit))
+      else fit[["y"]]
+    }
+
+    new_fit <- lm.wfit(x = x, y = y, w = weights, offset = fit$offset)
+    
+    fit <- .list_modify(fit, new_fit)
+  }
+  else if (class(fit)[1L] == "glm") {
+    x <- model.matrix(fit)
+    y <- {
+      if (is.null(fit[["y"]])) model.response(model.frame(fit))
+      else fit[["y"]]
+    }
+
+    start <- fit$coefficients
+    
+    new_fit <- do.call(fit$method,
+                       list(x = x, y = y, weights = weights,
+                            start = start, offset = fit$offset,
+                            family = fit$family,
+                            control = fit$control))
+    
+    fit <- .list_modify(fit, new_fit)
+  }
+  else {
+    fit <- do.call("update", list(fit, weights = weights))
+  }
+  
+  fit
 }

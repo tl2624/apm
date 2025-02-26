@@ -101,7 +101,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   chk::chk_subset(val_times, data[[time_var]])
   
   if (is.null(weights)) {
-    weights <- rep(1, nrow(data))
+    weights <- rep.int(1, nrow(data))
   }
   else {
     chk::chk_numeric(weights)

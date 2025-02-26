@@ -109,107 +109,205 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
   
   val_times <- fits$val_times
   models <- fits$models
+  grid <- fits$grid
+  BMA_weights <- fits$BMA_weights
   
   #Remove models that won't contribute
-  if (all_models) {
-    BMA_weights <- fits$BMA_weights
+  if (!all_models) {
+    models_to_keep <- which(BMA_weights > 0)
+    fits_to_keep <- which(grid$model %in% models_to_keep)
+    
+    # models <- models[models_to_keep]
+    BMA_weights <- BMA_weights[models_to_keep]
+    
+    # grid <- grid[fits_to_keep, , drop = FALSE]
+    # fits$val_fits <- fits$val_fits[fits_to_keep]
   }
   else {
-    models <- models[fits$BMA_weights > 0]
-    BMA_weights <- fits$BMA_weights[fits$BMA_weights > 0]
+    models_to_keep <- seq_along(models)
+    fits_to_keep <- seq_along(fits$val_fits)
+  }
+ 
+  #Prep everything for bootstrap that doesn't involve weights
+  mods <- .subset_m_post_list <- .val_data_m_post_list <- .val_groups_m_post_list <- y_m_post_list <-
+    vector("list", length(models))
+  for (mi in models_to_keep) {
+    mods[[mi]] <- .modify_formula_and_data(models[[mi]],
+                                           data = data, group_var = group_var,
+                                           unit_var = unit_var, time_var = time_var)
+    
+    d <- mods[[mi]]$data
+    
+    .subset_m_post_list[[mi]] <- which(d[[time_var]] == post_time)
+    
+    .val_data_m_post_list[[mi]] <- d[.subset_m_post_list[[mi]], , drop = FALSE]
+    
+    .val_groups_m_post_list[[mi]] <- setNames(lapply(group_levels, function(g) {
+      which(.val_data_m_post_list[[mi]][[group_var]] == g)
+    }), group_levels)
+    
+    y_m_post_list[[mi]] <- model.response(model.frame(update(mods[[mi]]$formula, . ~ 1),
+                                                      data = .val_data_m_post_list[[mi]]))
+    
+    if (models[[mi]]$log) {
+      y_m_post_list[[mi]] <- exp(y_m_post_list[[mi]])
+    }
   }
   
-  mods <- lapply(models, .modify_formula_and_data,
-                 data = data, group_var = group_var,
-                 unit_var = unit_var, time_var = time_var)
+  if (M > 0) {
+    .subset_f_post_list <- .val_data_f_val_list <- .val_groups_f_val_list <- y_f_val_list <-
+      .predict_f_val_list <- vector("list", length(fits$val_fits))
+    
+    for (fi in fits_to_keep) {
+      mi <- grid[["model"]][fi]
+      ti <- grid[["time_ind"]][fi]
+      
+      d <- mods[[mi]]$data
+      
+      time <- val_times[ti]
+      
+      .subset_f_post_list[[fi]] <- which(d[[time_var]] == time)
+      
+      .val_data_f_val_list[[fi]] <- d[.subset_f_post_list[[fi]], , drop = FALSE]
+      
+      .val_groups_f_val_list[[fi]] <- setNames(lapply(group_levels, function(g) {
+        which(.val_data_f_val_list[[fi]][[group_var]] == g)
+      }), group_levels)
+      
+      y_f_val_list[[fi]] <- model.response(model.frame(update(mods[[mi]]$formula, . ~ 1),
+                                                       data = .val_data_f_val_list[[fi]]))
+      
+      if (models[[mi]]$log) {
+        y_f_val_list[[fi]] <- exp(y_f_val_list[[fi]])
+      }
+
+      .predict_f_val_list[[fi]] <- .make_predict_prep(fits$val_fits[[fi]],
+                                                      .val_data_f_val_list[[fi]])
+    }
+  }
   
   #FWB for ATTs
   .boot_fun <- function(.data, .weights, ...) {
-    times <- post_time
+    .atts <- setNames(rep.int(NA_real_, length(models)),
+                      names(models))
     
-    if (M > 0) {
-      times <- c(times, val_times)
-    }
-    
-    pred_error_diffs_mat <- matrix(NA_real_,
-                                   nrow = length(times),
-                                   ncol = length(models),
-                                   dimnames = list(times,
-                                                   names(models)))
-    
-    for (mi in seq_along(models)) {
+    for (mi in models_to_keep) {
       model <- models[[mi]]
       
       d <- mods[[mi]]$data
       
-      for (ti in seq_along(times)) {
-        
-        time <- times[ti]
-        
-        subset_i_v <- which(d[[time_var]] == time)
-        
-        .val_data_i_v <- d[subset_i_v, , drop = FALSE]
-        .val_weights_i_v <- .weights[subset_i_v] * weights[subset_i_v]
-        .val_groups_i_v <- setNames(lapply(group_levels, function(g) {
-          which(.val_data_i_v[[group_var]] == g)
-        }), group_levels)
-        
-        y <- model.response(model.frame(update(mods[[mi]]$formula, . ~ 1),
-                                        data = .val_data_i_v))
-        
-        if (model$log) {
-          y <- exp(y)
-        }
-        
-        observed_val_means_i <- setNames(
-          vapply(group_levels, function(g) {
-            .wtd_mean(y, .val_weights_i_v, .val_groups_i_v[[g]])
-          }, numeric(1L)),
-          group_levels
-        )
-        
-        # Compute prediction errors for each model for each validation period
-        fit <- .fit_one_model(mods[[mi]],
-                              weights = weights * .weights,
-                              time_var = time_var,
-                              val_time = time,
-                              family = model$family)
-        
-        .val_predict_prep_i_v <- .make_predict_prep(fit, .val_data_i_v)
-        
-        ##Generate predictions on validation data
-        # p <- predict(fit, newdata = .val_data_i_v, type = "response")
-        p <- .predict_quick(na.omit(coef(fit)),
-                            .val_predict_prep_i_v,
-                            fit$family$linkinv)
-        
-        #Unlog if outcome is logged to keep on original scale
-        if (model$log) {
-          p <- exp(p)
-        }
-        
-        predicted_val_means_i <- setNames(
-          vapply(group_levels, function(g) {
-            .wtd_mean(p, .val_weights_i_v, .val_groups_i_v[[g]])
-          }, numeric(1L)),
-          group_levels
-        )
-        
-        pred_error_diffs_mat[ti, mi] <- (observed_val_means_i["1"] - observed_val_means_i["0"]) -
-          (predicted_val_means_i["1"] - predicted_val_means_i["0"])
+      time <- post_time
+      
+      .subset_mi <- .subset_m_post_list[[mi]]
+      
+      .val_data_mi <- .val_data_m_post_list[[mi]]
+      
+      .val_weights_mi <- .weights[.subset_mi] * weights[.subset_mi]
+      
+      .val_groups_mi <- .val_groups_m_post_list[[mi]]
+      
+      y <- y_m_post_list[[mi]]
+      
+      observed_val_means_i <- setNames(
+        vapply(group_levels, function(g) {
+          .wtd_mean(y, .val_weights_mi, .val_groups_mi[[g]])
+        }, numeric(1L)),
+        group_levels
+      )
+      
+      # Compute prediction errors for each model for each validation period
+      fit <- .fit_one_model(mods[[mi]],
+                            weights = weights * .weights,
+                            time_var = time_var,
+                            val_time = post_time,
+                            family = model$family)
+      
+      .val_predict_prep_i_v <- .make_predict_prep(fit, .val_data_mi)
+      
+      ##Generate predictions on validation data
+      # p <- predict(fit, newdata = .val_data_i_v, type = "response")
+      p <- .predict_quick(na.omit(coef(fit)),
+                          .val_predict_prep_i_v,
+                          fit$family$linkinv)
+      
+      #Unlog if outcome is logged to keep on original scale
+      if (model$log) {
+        p <- exp(p)
       }
+      
+      predicted_val_means_i <- setNames(
+        vapply(group_levels, function(g) {
+          .wtd_mean(p, .val_weights_mi, .val_groups_mi[[g]])
+        }, numeric(1L)),
+        group_levels
+      )
+      
+      .atts[mi] <- (observed_val_means_i["1"] - observed_val_means_i["0"]) -
+        (predicted_val_means_i["1"] - predicted_val_means_i["0"])
     }
-    
-    #ATT is pred error for post_time
-    .atts <- pred_error_diffs_mat[1L, ]
-    
+
     if (M == 0) {
-      return(.atts)
+      return(.atts[models_to_keep])
     }
     
-    .max_abs_pred_error_diffs <- .colMax(abs(pred_error_diffs_mat[-1L, , drop = FALSE]))
+    pred_error_diffs_val_mat <- matrix(NA_real_,
+                                       nrow = length(val_times),
+                                       ncol = length(models),
+                                       dimnames = list(val_times,
+                                                       names(models)))
     
-    c(.atts, .max_abs_pred_error_diffs)
+    for (fi in fits_to_keep) {
+      mi <- grid[["model"]][fi]
+      ti <- grid[["time_ind"]][fi]
+      
+      d <- mods[[mi]]$data
+      
+      time <- val_times[ti]
+      
+      .subset_fi <- .subset_f_post_list[[fi]]
+      
+      .val_data_fi <- .val_data_f_val_list[[fi]]
+      
+      .val_weights_fi <- .weights[.subset_fi] * weights[.subset_fi]
+      
+      .val_groups_fi <- .val_groups_f_val_list[[fi]]
+      
+      y <- y_f_val_list[[fi]]
+      
+      observed_val_means_i <- setNames(
+        vapply(group_levels, function(g) {
+          .wtd_mean(y, .val_weights_fi, .val_groups_fi[[g]])
+        }, numeric(1L)),
+        group_levels
+      )
+      
+      fit <- .refit_with_weights(fits$val_fits[[fi]], weights * .weights)
+      
+      ##Generate predictions on validation data
+      # p <- predict(fit, newdata = .val_data_i_v, type = "response")
+      p <- .predict_quick(na.omit(coef(fit)),
+                          .predict_f_val_list[[fi]],
+                          fit$family$linkinv)
+      
+      #Unlog if outcome is logged to keep on original scale
+      if (models[[mi]]$log) {
+        p <- exp(p)
+      }
+      
+      predicted_val_means_i <- setNames(
+        vapply(group_levels, function(g) {
+          .wtd_mean(p, .val_weights_fi, .val_groups_fi[[g]])
+        }, numeric(1L)),
+        group_levels
+      )
+      
+      pred_error_diffs_val_mat[ti, mi] <- (observed_val_means_i["1"] - observed_val_means_i["0"]) -
+        (predicted_val_means_i["1"] - predicted_val_means_i["0"])
+    }
+    
+    .max_abs_pred_error_diffs <- .colMax(abs(pred_error_diffs_val_mat[, models_to_keep, drop = FALSE]))
+    
+    c(.atts[models_to_keep], .max_abs_pred_error_diffs)
   }
   
   boot_out <- fwb::fwb(data = data,
@@ -219,7 +317,7 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
                        verbose = verbose,
                        cl = cl, ...)
   
-  att_inds <- seq_along(models)
+  att_inds <- seq_along(models_to_keep)
   
   # ATT
   atts <- unname(boot_out[["t0"]][att_inds])
@@ -235,7 +333,7 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
   
   out <- list(BMA_att = c(ATT = unname(BMA_att)),
               atts = matrix(atts, ncol = 1L,
-                            dimnames = list(names(models), "ATT")),
+                            dimnames = list(names(models)[models_to_keep], "ATT")),
               BMA_var = c(ATT = unname(BMA_var)),
               BMA_var_b = c(ATT = unname(BMA_var_b)),
               BMA_var_m = c(ATT = unname(BMA_var_m)),
@@ -426,7 +524,7 @@ print.summary.apm_est <- function(x, digits = max(3L, getOption("digits") - 3L),
 plot.apm_est <- function(x, label = TRUE, size.weights = TRUE, ...) {
   chk::chk_flag(label)
   
-  max_abs_pred_error_diffs <- .colMax(abs(x[["pred_errors_diffs"]]))
+  max_abs_pred_error_diffs <- .colMax(abs(x[["pred_error_diffs"]]))
   est <- x[["atts"]][, 1L]
   
   labels <- {

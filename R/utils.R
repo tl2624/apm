@@ -89,7 +89,7 @@
 }
 
 .fill_vec <- function(u, ...) {
-  out <- setNames(rep(0, length(u)), u)
+  out <- setNames(rep.int(0, length(u)), u)
   
   for (i in seq_len(...length())) {
     x <- ...elt(i)
@@ -234,4 +234,15 @@
   }
   
   x
+}
+
+.list_modify <- function(old, new) {
+  new_names <- names(new)
+  new_names <- new_names[nzchar(new_names)]
+  
+  for (v in new_names) {
+    old[[v]] <- new[[v]]
+  }
+  
+  old
 }

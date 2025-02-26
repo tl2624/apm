@@ -208,7 +208,7 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4L, clip_a
       scale_x_continuous(labels = levels(df$time),
                          breaks = seq_len(nlevels(df$time))) +
       labs(x = "Period", y = "Outcome",
-           title = "Treated and control groups' average prediction errors") +
+           title = "Treated and control groups' average predictions") +
       guides(color = guide_legend(title = element_blank(), position = "bottom")) +
       facet_wrap(vars(.data$model), ncol = ncol) +
       theme_bw() +
@@ -266,7 +266,7 @@ plot.apm_pre_fits <- function(x, type = "weights", abs = TRUE, ncol = 4L, clip_a
       scale_x_continuous(labels = levels(df$time),
                          breaks = seq_len(nlevels(df$time))) +
       labs(x = "Period", y = "Outcome",
-           title = "Treated group's corrected prediction errors") +
+           title = "Treated group's corrected predictions") +
       facet_wrap(vars(.data$model), ncol = ncol) +
       theme_bw() +
       theme(axis.text.x = element_text(angle = 90, vjust = .5))
