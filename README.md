@@ -260,8 +260,7 @@ model selection.
 ``` r
 est <- apm_est(fits,
                post_time = 2008,
-               M = 1,
-               R = 50)
+               M = 1)
 
 est
 #> An `apm_est` object
@@ -272,12 +271,12 @@ est
 #>    - validation times: 
 #>    - post-treatment time: 2008
 #>  - sensitivity parameter (M): 1
-#>  - bootstrap replications: 50
+#>  - bootstrap replications: 1000
 #> 
 #> Use `summary()` or `plot()` to examine estimates and uncertainty bounds.
 
 summary(est)
 #>       Estimate Std. Error  CI low CI high z_value Pr(>|z|)
-#> ATT      60.12      40.13  -18.54  138.78   1.498    0.134
-#> M = 1        .          . -115.24  179.47       .        .
+#> ATT      61.65      39.80  -16.36  139.66   1.549    0.121
+#> M = 1        .          . -113.19  180.71       .        .
 ```

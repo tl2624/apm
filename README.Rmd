@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# `apm`: Averaged Prediction Models
+## `apm`: Averaged Prediction Models
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -23,7 +23,7 @@ library(apm)
 data("ptpdata")
 ```
 
-## Supplying models
+### Supplying models
 
 We can specify the models to test using `apm_mod()`. This create a full cross of all supplied arguments, which include model formula, families, whether the outcome is logged or not, whether fixed effects are included or not, whether the outcome should be a difference, and whether outcome lags should appear as predictors. Below, we create a cross of 9 models.
 
@@ -50,7 +50,7 @@ models
 
 This leaves us with 10 models.
 
-## Fitting the models
+### Fitting the models
 
 Next we fit all 10 models to the data. We do so once for each validation time to compute the average prediction error that will be used to select the optimal model. All models are fit simultaneously so the simulation can use the full joint distribution of model parameter estimates. For each validation time, each model is fit using a dataset that contains data points prior to that time.
 
@@ -67,15 +67,14 @@ fits <- apm_pre(models,
 fits
 ```
 
-## Computing the ATT
+### Computing the ATT
 
 We compute the ATT using `apm_est()`, which uses bootstrapping to compute model uncertainty due to sampling along with uncertainty due to model selection.
 
 ```{r}
 est <- apm_est(fits,
                post_time = 2008,
-               M = 1,
-               R = 50)
+               M = 1)
 
 est
 
