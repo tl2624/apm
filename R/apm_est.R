@@ -113,19 +113,15 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
   BMA_weights <- fits$BMA_weights
   
   #Remove models that won't contribute
-  if (!all_models) {
+  if (all_models) {
+    models_to_keep <- seq_along(models)
+    fits_to_keep <- seq_along(fits$val_fits)
+  }
+  else {
     models_to_keep <- which(BMA_weights > 0)
     fits_to_keep <- which(grid$model %in% models_to_keep)
     
-    # models <- models[models_to_keep]
     BMA_weights <- BMA_weights[models_to_keep]
-    
-    # grid <- grid[fits_to_keep, , drop = FALSE]
-    # fits$val_fits <- fits$val_fits[fits_to_keep]
-  }
-  else {
-    models_to_keep <- seq_along(models)
-    fits_to_keep <- seq_along(fits$val_fits)
   }
  
   #Prep everything for bootstrap that doesn't involve weights
@@ -163,10 +159,8 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
       ti <- grid[["time_ind"]][fi]
       
       d <- mods[[mi]]$data
-      
-      time <- val_times[ti]
-      
-      .subset_f_post_list[[fi]] <- which(d[[time_var]] == time)
+
+      .subset_f_post_list[[fi]] <- which(d[[time_var]] == val_times[ti])
       
       .val_data_f_val_list[[fi]] <- d[.subset_f_post_list[[fi]], , drop = FALSE]
       
@@ -193,10 +187,6 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
     
     for (mi in models_to_keep) {
       model <- models[[mi]]
-      
-      d <- mods[[mi]]$data
-      
-      time <- post_time
       
       .subset_mi <- .subset_m_post_list[[mi]]
       
@@ -260,13 +250,7 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
       mi <- grid[["model"]][fi]
       ti <- grid[["time_ind"]][fi]
       
-      d <- mods[[mi]]$data
-      
-      time <- val_times[ti]
-      
       .subset_fi <- .subset_f_post_list[[fi]]
-      
-      .val_data_fi <- .val_data_f_val_list[[fi]]
       
       .val_weights_fi <- .weights[.subset_fi] * weights[.subset_fi]
       

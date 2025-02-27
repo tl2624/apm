@@ -2,10 +2,10 @@
 .wtd_mean <- function(x, w = NULL, subset = NULL) {
   if (!is.null(subset)) {
     if (is.null(w)) {
-      return(.wtd_mean(x[subset]))
+      return(Recall(x[subset]))
     }
     
-    return(.wtd_mean(x[subset], w = w[subset]))
+    return(Recall(x[subset], w = w[subset]))
   }
   
   if (is.null(w)) {
@@ -19,10 +19,10 @@
 .wtd_sd <- function(x, w = NULL, subset = NULL) {
   if (!is.null(subset)) {
     if (is.null(w)) {
-      return(.wtd_sd(x[subset]))
+      return(Recall(x[subset]))
     }
     
-    return(.wtd_sd(x[subset], w = w[subset]))
+    return(Recall(x[subset], w = w[subset]))
   }
   
   if (is.null(w)) {

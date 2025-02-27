@@ -14,15 +14,15 @@
 #' A `ggplot` object, which can be manipulated using `ggplot2` syntax (after loading `ggplot2`).
 #' 
 #' @details
-#' When `type = "weights"`, `plot()` displays a bar plot with a bar for each model with height equal to the BMA weight/posterior probability of selection for that model. (Note that the plot margins can sometimes cut off the models names; use `theme(plot.margins =)` after loading `ggplot2` to extend the left margin of the plot to ensure all text is visible. Alternatively, the axis text can be rotated using `theme(axis.text.x =)`.)
+#' When `type = "weights"`, `plot()` displays a bar plot with a bar for each model with height equal to the BMA weight/posterior probability of selection for that model. (Note that the plot margins can sometimes cut off the model names; use `theme(plot.margins =)` after loading `ggplot2` to extend the left margin of the plot to ensure all text is visible. Alternatively, the axis text can be rotated using `theme(axis.text.x =)`.)
 #' 
-#' When `type = "errors"`, `plot()` displays a lattice of bar plots, with a plot for each model displaying the difference in average prediction errors for each validation period. The period with the largest difference in average prediction errors will be shaded black. The model with the smallest maximum absolute difference in average prediction errors will have a gray label.
+#' When `type = "errors"`, `plot()` displays a lattice of bar plots with a plot for each model displaying the difference in average prediction errors for each validation period. The period with the largest difference in average prediction errors will be shaded black. The model with the smallest maximum absolute difference in average prediction errors will have a gray label.
 #' 
-#' When `type = "predict"`, `plot()` displays a lattice of line plots, with a plot for each model displaying the observed and predicted outcomes for each validation period under each model. The observed outcomes are displayed as points, while the predicted outcomes are displayed as lines.
+#' When `type = "predict"`, `plot()` displays a lattice of line plots with a plot for each model displaying the observed and predicted outcomes for each validation period under each model. The observed outcomes are displayed as points, while the predicted outcomes are displayed as lines.
 #' 
-#' When `type = "corrected"`, `plot()` displays a lattice of line plots, with a plot for each model displaying the observed and corrected predictions for the treated group for each validation period under each model. The observed outcomes are displayed as points, while the corrected predictions are displayed as lines. Corrected predictions are computed as the observed outcome in the treated group minus the prediction error in the treated group plus the prediction error in the control group.
+#' When `type = "corrected"`, `plot()` displays a lattice of line plots with a plot for each model displaying the observed and corrected predictions for the treated group for each validation period under each model. The observed outcomes are displayed as points, while the corrected predictions are displayed as lines. Corrected predictions are computed as the observed outcome in the treated group minus the prediction error in the treated group plus the prediction error in the control group.
 #' 
-#' @seealso [apm_pre()] to to compute the difference in average prediction errors and BMA weights; `ggplot2::geom_col()`, which is used to create the plots.
+#' @seealso [apm_pre()] to to compute the difference in average prediction errors and BMA weights; [ggplot2::geom_col()], which is used to create the plots.
 #' 
 #' @examples 
 #' data("ptpdata")

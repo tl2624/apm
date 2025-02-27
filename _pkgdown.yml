@@ -1,4 +1,10 @@
 url: ~
 template:
   bootstrap: 5
-
+reference:
+  - apm_mod
+  - apm_pre
+  - plot.apm_pre_fits
+  - amp_est
+  - robustness_bound
+  - ptpdata

@@ -1,6 +1,6 @@
 Package: apm
 Title: Averaged Prediction Models
-Version: 0.0.0.9002
+Version: 0.1.0
 Authors@R: 
   c(person("Thomas", "Leavitt", email = "thomas.leavitt@baruch.cuny.edu", role = c("aut"),
            comment = c(ORCID = "0000-0002-3668-6409")),

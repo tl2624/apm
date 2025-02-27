@@ -227,7 +227,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   }
   
   #Difference in average prediction errors
-  pred_error_diffs_mat <- pred_errors_array[, , "1"] - pred_errors_array[, , "0"]
+  pred_error_diffs_mat <- pred_errors_array[, , 2L] - pred_errors_array[, , 1L]
   
   #Simulate to get BMA weights
   
@@ -277,15 +277,12 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
         p <- exp(p)
       }
       
-      predicted_val_means_s_i <- setNames(
-        vapply(group_levels, function(g) {
+      predicted_val_means_s_i <- vapply(group_levels, function(g) {
           .wtd_mean(p, val_weights[[f]], val_groups[[f]][[g]])
-        }, numeric(1L)),
-        group_levels
-      )
+        }, numeric(1L))
       
-      mat[ti, mi] <- (observed_val_means[[val_time_c]]["1"] - observed_val_means[[val_time_c]]["0"]) -
-        (predicted_val_means_s_i["1"] - predicted_val_means_s_i["0"])
+      mat[ti, mi] <- (observed_val_means[[val_time_c]][2L] - observed_val_means[[val_time_c]][1L]) -
+        (predicted_val_means_s_i[2L] - predicted_val_means_s_i[1L])
     }
     
     mat
