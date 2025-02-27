@@ -31,3 +31,5 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 LazyData: true
 VignetteBuilder: knitr
+URL: https://github.com/tl2624/apm
+BugReports: https://github.com/tl2624/apm/issues
