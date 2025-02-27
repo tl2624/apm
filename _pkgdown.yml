@@ -2,6 +2,7 @@ url: ~
 template:
   bootstrap: 5
 reference:
+  contents:
   - apm_mod
   - apm_pre
   - plot.apm_pre_fits
