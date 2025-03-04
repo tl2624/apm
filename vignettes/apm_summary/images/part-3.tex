@@ -1,0 +1,18 @@
+%%% part-3.tex
+
+\documentclass{standalone}
+
+\usepackage{tikz}
+\usepackage{amsmath}
+
+\definecolor{myBlue}{RGB}{15,158,213}
+\definecolor{myPurple}{RGB}{160,43,147}
+\definecolor{myOrange}{RGB}{233,113,50}
+
+\begin{document}
+	$\setlength\arraycolsep{0.5pt}\renewcommand{\arraystretch}{0.5}\begin{pmatrix}
+		\text{\tikz\fill[myBlue!25](0,0.5) -- (0.5,0) -- (0,-0.5) -- (-0.5,0) -- cycle;}&\text{\tikz\fill[myBlue!50](0,0.5) -- (0.5,0) -- (0,-0.5) -- (-0.5,0) -- cycle;}&\text{\tikz\node[inner sep=0pt,minimum height=1cm]{$\cdots$};}&\text{\tikz\fill[myBlue!25](0,0.5) -- (0.5,0) -- (0,-0.5) -- (-0.5,0) -- cycle;}\\
+		\text{\tikz\fill[myPurple!50](0,0.5) -- (0.5,0) -- (0,-0.5) -- (-0.5,0) -- cycle;}&\text{\tikz\fill[myPurple!25](0,0.5) -- (0.5,0) -- (0,-0.5) -- (-0.5,0) -- cycle;}&\text{\tikz\node[inner sep=0pt,minimum height=1cm]{$\cdots$};}&\text{\tikz\fill[myPurple!50](0,0.5) -- (0.5,0) -- (0,-0.5) -- (-0.5,0) -- cycle;}\\
+		\text{\tikz\fill[myOrange!25](0,0.5) -- (0.5,0) -- (0,-0.5) -- (-0.5,0) -- cycle;}&\text{\tikz\fill[myOrange!50](0,0.5) -- (0.5,0) -- (0,-0.5) -- (-0.5,0) -- cycle;}&\text{\tikz\node[inner sep=0pt,minimum height=1cm]{$\cdots$};}&\text{\tikz\fill[myOrange!25](0,0.5) -- (0.5,0) -- (0,-0.5) -- (-0.5,0) -- cycle;}
+	\end{pmatrix}$
+\end{document}
