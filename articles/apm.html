@@ -293,18 +293,18 @@ each model and the BMA weights given to each model using
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fits</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##                                   BMA weights Max|errors|  </span></span>
-<span><span class="co">## FE (log)                                0.000       0.826  </span></span>
-<span><span class="co">## AR(1) + FE (log)                        0.960       0.584 *</span></span>
-<span><span class="co">## FE (log, 1st diff)                      0.000       0.874  </span></span>
 <span><span class="co">## FE                                      0.000       0.850  </span></span>
-<span><span class="co">## AR(1) + FE                              0.038       0.630  </span></span>
+<span><span class="co">## AR(1) + FE                              0.022       0.630  </span></span>
 <span><span class="co">## FE (1st diff)                           0.000       0.997  </span></span>
+<span><span class="co">## FE (log)                                0.000       0.826  </span></span>
+<span><span class="co">## AR(1) + FE (log)                        0.977       0.584 *</span></span>
+<span><span class="co">## FE (log, 1st diff)                      0.000       0.874  </span></span>
+<span><span class="co">## linear trend + FE                       0.000       1.102  </span></span>
+<span><span class="co">## linear trend + AR(1) + FE               0.001       0.719  </span></span>
+<span><span class="co">## linear trend + FE (1st diff)            0.000       1.264  </span></span>
 <span><span class="co">## linear trend + FE (log)                 0.000       0.988  </span></span>
 <span><span class="co">## linear trend + AR(1) + FE (log)         0.000       0.933  </span></span>
 <span><span class="co">## linear trend + FE (log, 1st diff)       0.000       1.207  </span></span>
-<span><span class="co">## linear trend + FE                       0.002       1.102  </span></span>
-<span><span class="co">## linear trend + AR(1) + FE               0.000       0.719  </span></span>
-<span><span class="co">## linear trend + FE (1st diff)            0.000       1.264  </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Use `plot()` to plot prediction errors and BMA weights.</span></span></code></pre>
 <p>We can plot the simulation-based posterior distribution of which
@@ -366,8 +366,8 @@ statistical confidence level; to ignore sampling uncertainty, set
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">est</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##       Estimate Std. Error CI low CI high z_value Pr(&gt;|z|)    </span></span>
-<span><span class="co">## ATT     1.1431     0.1224 0.9031  1.3830   9.337   &lt;2e-16 ***</span></span>
-<span><span class="co">## M = 1        .          . 0.1380  2.0187       .        .    </span></span>
+<span><span class="co">## ATT     1.1414     0.1226 0.9011  1.3817    9.31   &lt;2e-16 ***</span></span>
+<span><span class="co">## M = 1        .          . 0.1367  2.0099       .        .    </span></span>
 <span><span class="co">## ---</span></span>
 <span><span class="co">## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre>
 <p>The standard error is the square root of the sum of two variances:
@@ -402,12 +402,12 @@ values of <code>M</code> from 1 to 2 in increments of 0.25.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">est</span>, M <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span>from <span class="op">=</span> <span class="fl">1</span>, to <span class="op">=</span> <span class="fl">2</span>, by <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##          Estimate Std. Error  CI low CI high z_value Pr(&gt;|z|)    </span></span>
-<span><span class="co">## ATT        1.1431     0.1224  0.9031  1.3830   9.337   &lt;2e-16 ***</span></span>
-<span><span class="co">## M = 1           .          .  0.1380  2.0187       .        .    </span></span>
-<span><span class="co">## M = 1.25        .          . -0.0666  2.2117       .        .    </span></span>
-<span><span class="co">## M = 1.5         .          . -0.2732  2.4107       .        .    </span></span>
-<span><span class="co">## M = 1.75        .          . -0.4814  2.6137       .        .    </span></span>
-<span><span class="co">## M = 2           .          . -0.6906  2.8193       .        .    </span></span>
+<span><span class="co">## ATT        1.1414     0.1226  0.9011  1.3817    9.31   &lt;2e-16 ***</span></span>
+<span><span class="co">## M = 1           .          .  0.1367  2.0099       .        .    </span></span>
+<span><span class="co">## M = 1.25        .          . -0.0672  2.2014       .        .    </span></span>
+<span><span class="co">## M = 1.5         .          . -0.2730  2.3991       .        .    </span></span>
+<span><span class="co">## M = 1.75        .          . -0.4803  2.6009       .        .    </span></span>
+<span><span class="co">## M = 2           .          . -0.6886  2.8054       .        .    </span></span>
 <span><span class="co">## ---</span></span>
 <span><span class="co">## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre>
 <p>This output shows that our 95% confidence interval for the ATT’s
@@ -416,14 +416,14 @@ lower bound excludes 0 when <code>M = 1.25</code>, but not when
 <code>M</code>, we can run the following.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/robustness_bound.html">robustness_bound</a></span><span class="op">(</span><span class="va">est</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 1.168991</span></span></code></pre>
+<pre><code><span><span class="co">## [1] 1.167954</span></span></code></pre>
 <p>We can also run <code><a href="../reference/robustness_bound.html">robustness_bound()</a></code> when the level is
 <code>level = 0</code>, which will give us the value of <code>M</code>
 in which the sensitivity bound (not statistical confidence bounds) begin
 to bracket 0.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/robustness_bound.html">robustness_bound</a></span><span class="op">(</span><span class="va">est</span>, level <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 1.948426</span></span></code></pre>
+<pre><code><span><span class="co">## [1] 1.950976</span></span></code></pre>
 <p>As we would expect, the changepoint value of <code>M</code> is
 greater when <code>level = 0</code>.</p>
 </div>
