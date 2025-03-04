@@ -278,7 +278,7 @@ For more details, see:
 
 -   [GitHub Repository](https://github.com/ngreifer/apm)
 
--   [Paper on APM Methodology](https://imstat.org/journals-and-publications/annals-of-applied-statistics/)
+-   [Paper on APM Methodology](https://static1.squarespace.com/static/5d54a19a5a1edf0001ea677a/t/67925707ef4f220a4827ce23/1737643784263/apm_preprint.pdf)
 
 ------------------------------------------------------------------------
 
