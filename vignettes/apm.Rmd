@@ -31,7 +31,7 @@ We specify a collection of plausible models for this prediction task and compare
 
 Then we apply Bayesian model averaging (BMA), weighting each model by its posterior probability of being the most robust. Taking an "informal Bayesian approach", we sample model parameters from a quasi-posterior [@gelmanhill2006, p. 140]. This is a multivariate Normal distribution with mean equal to the estimated parameters of the fitted models and a variance-covariance matrix that incorporates across-model correlations. For each parameter draw, we compute the models' differential prediction errors and take the max over the validation periods. Each model's weight is the proportion of draws in which it minimizes the maximum differential prediction error (i.e., is most robust). Finally, using the corrected predictions from our averaged model, we estimate the average treatment effect on the treated (ATT).
 
-![Summary of the APM method](apm_summary.png){width="100%"}
+![Summary of the APM method](apm_summary/apm_summary.svg){width="100%"}
 
 For inference, we apply a fractional weighted bootstrap [@xuetal2020]. It takes into account uncertainty about the models' performance, but not the uncertainty in the BMA weights themselves, which would be computationally infeasible. Following @antonellietal2022, we estimate overall variance as the sum of two components: (1) sampling variance with fixed model uncertainty and (2) model uncertainty variance with fixed sampling uncertainty.
 
