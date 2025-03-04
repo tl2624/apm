@@ -11,7 +11,8 @@ In panel data settings, specifies set of candidate models, fits them to data fro
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://ngreifer.github.io/apm/}
+  \item \url{https://github.com/tl2624/apm}
+  \item Report bugs at \url{https://github.com/tl2624/apm/issues}
 }
 
 }

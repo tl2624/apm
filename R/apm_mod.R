@@ -43,7 +43,7 @@
 
 #' @export 
 apm_mod <- function(formula_list, family = "gaussian", lag = 0L, diff_k = 0L,
-                     log = FALSE, time_trend = 0L, fixef = FALSE, identiy_only_log = TRUE) {
+                    log = FALSE, time_trend = 0L, fixef = FALSE, identiy_only_log = TRUE) {
   # Check arguments
   
   ## Check formula_list
@@ -61,7 +61,7 @@ apm_mod <- function(formula_list, family = "gaussian", lag = 0L, diff_k = 0L,
   if (any(lengths(formula_list) < 3L)) {
     chk::err("all formulas in `formula_list` must have left-hand-side (outcome) variable")
   }
-
+  
   ## Check family
   if (.okay_family(family)) {
     family <- list(family)
@@ -94,14 +94,14 @@ apm_mod <- function(formula_list, family = "gaussian", lag = 0L, diff_k = 0L,
   chk::chk_whole_numeric(lag)
   chk::chk_gte(lag, 0)
   
-  lag <- unique(lag)
+  lag <- sort(unique(lag))
   
   ## Check diff_k
   chk::chk_not_any_na(diff_k)
   chk::chk_whole_numeric(diff_k)
   chk::chk_gte(diff_k, 0)
   
-  diff_k <- unique(diff_k)
+  diff_k <- sort(unique(diff_k))
   
   if (any(diff_k > 0)) {
     if (max(diff_k) <= min(lag))
@@ -112,20 +112,20 @@ apm_mod <- function(formula_list, family = "gaussian", lag = 0L, diff_k = 0L,
   chk::chk_not_any_na(log)
   chk::chk_logical(log)
   
-  log <- unique(log)
+  log <- sort(unique(log))
   
   ## Check time_trend
   chk::chk_not_any_na(time_trend)
   chk::chk_whole_numeric(time_trend)
   chk::chk_gte(time_trend, 0)
   
-  time_trend <- unique(time_trend)
+  time_trend <- sort(unique(time_trend))
   
   # Check fixef
   chk::chk_not_any_na(fixef)
   chk::chk_logical(fixef)
   
-  fixef <- unique(fixef)
+  fixef <- sort(unique(fixef))
   
   grid <- expand.grid(formula = seq_along(formula_list),
                       family = seq_along(family),
@@ -209,7 +209,7 @@ c.apm_models <- function(..., recursive = TRUE) {
   }
   
   names(out) <- .name_mods(out)
-
+  
   class(out) <- "apm_models"
   
   out
@@ -285,11 +285,9 @@ c.apm_models <- function(..., recursive = TRUE) {
       }
     }
     else if (model$time_trend == 0 && model$lag == 0 && !model$fixef) {
-      if (attr(formula, "intercept") == 0) {
-        n <- "empty model"
-      }
-      else {
-        n <- "baseline mean"
+      n <- {
+        if (attr(formula, "intercept") == 0) "empty model"
+        else "baseline mean"
       }
     }
     
@@ -318,7 +316,7 @@ c.apm_models <- function(..., recursive = TRUE) {
     if (model$diff_k > 0) {
       n2 <- c(n2, sprintf("%s diff", .ordinal(model$diff_k)))
     }
-
+    
     if (id_family) {
       n2 <- c(n2, .firstup(ff2[[m]]))
     }

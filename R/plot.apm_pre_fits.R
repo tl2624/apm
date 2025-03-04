@@ -42,7 +42,8 @@
 #'                  time_var = "year",
 #'                  val_times = 1999:2007,
 #'                  unit_var = "state",
-#'                  nsim = 50)
+#'                  nsim = 50,
+#'                  verbose = FALSE)
 #' fits
 #' 
 #' plot(fits, type = "weights")

@@ -62,12 +62,10 @@ library(apm)
 The package provides an example dataset with pre- and post-policy homicide rates:
 
 ```{r}
-
 data("ptpdata", package = "apm")
 
 # Inspect the dataset
 head(ptpdata)
-
 ```
 
 The dataset includes:

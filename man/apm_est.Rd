@@ -4,7 +4,7 @@
 \alias{apm_est}
 \alias{summary.apm_est}
 \alias{plot.apm_est}
-\title{Estimate ATTS from models fits}
+\title{Estimate ATTs from models fits}
 \usage{
 apm_est(
   fits,
@@ -32,11 +32,11 @@ apm_est(
 
 \item{all_models}{\code{logical}; whether to compute ATTs for all models (\code{TRUE}) or just those with BMA weights greater than 0 (\code{FALSE}, default). This will not effect the final estimates but leaving as \code{FALSE} can speed up computation when some models have BMA weights of 0.}
 
-\item{cl}{a cluster object created by \code{\link[parallel:makeCluster]{parallel::makeCluster()}}, or an integer to indicate number of child-processes (integer values are ignored on Windows) for parallel evaluations. It can also be \code{"future"} to use a future backend. \code{NULL} (default) refers to sequential evaluation. See the \code{cl} argument of \code{\link[pbapply:pbapply]{pbapply::pblapply()}} for details.}
+\item{cl}{a cluster object created by \code{\link[parallel:makeCluster]{parallel::makeCluster()}}, an integer to indicate number of child-processes (ignored on Windows) for parallel evaluations, or \code{"future"} to use a future backend. \code{NULL} (default) refers to sequential evaluation. See \code{\link[fwb:fwb]{fwb::fwb()}} for details and issues related to replicability.}
 
 \item{verbose}{\code{logical}; whether to print information about the progress of the estimation, including a progress bar. Default is \code{TRUE}.}
 
-\item{...}{ignored.}
+\item{\dots}{other arguments passed to \code{\link[fwb:fwb]{fwb::fwb()}}.}
 
 \item{level}{the desired confidence level. Set to 0 to ignore sampling variation in computing the interval bounds. Default is .95.}
 
@@ -50,13 +50,15 @@ apm_est(
 \code{apm_est()} returns an \code{apm_est} object, which contains the ATT estimates and their variance estimates. The following components are included:
 \describe{
 \item{BMA_att}{the BMA-weighted ATT}
-\item{atts}{a matrix containing the ATT estimates from each model (when \code{all_models = FALSE}, only models with positive BMA weights are included)}
+\item{atts}{a 1-column matrix containing the ATT estimates from each model (when \code{all_models = FALSE}, only models with positive BMA weights are included)}
 \item{BMA_var}{the total variance estimate for the BMA-weighted ATT incorporating the variance due to sampling and due to model selection}
 \item{BMA_var_b}{the bootstrap-based component of the variance estimate for the BMA-weighted ATT due to sampling}
 \item{BMA_var_m}{the component of the variance estimate for the BMA-weighted ATT due to model selection}
 \item{M}{the value of the sensitivity parameter \code{M}}
 \item{post_time}{the value supplied to \code{post_time}}
-\item{pred_errors}{a matrix containing the difference in average prediction errors for each model and each pre-treatment validation period}
+\item{observed_means}{a matrix of the observed outcome means at each pre-treatment validation period}
+\item{pred_errors}{an array containing the average prediction errors for each model and each pre-treatment validation period}
+\item{pred_error_diffs}{a matrix containing the difference in average prediction errors between groups for each model and each pre-treatment validation period}
 \item{BMA_weights}{the BMA weights computed by \code{apm_pre()} (when \code{all_models = FALSE}, only positive BMA weights are included)}
 \item{boot_out}{an \code{fwb} object containing the bootstrap results}
 }
@@ -92,12 +94,14 @@ fits <- apm_pre(models,
                  time_var = "year",
                  val_times = 2004:2007,
                  unit_var = "state",
-                 nsim = 100)
+                 nsim = 100,
+                 verbose = FALSE)
 
 est <- apm_est(fits,
-                post_time = 2008,
-                M = 1,
-                R = 20)
+               post_time = 2008,
+               M = 1,
+               R = 20,
+               verbose = FALSE)
 
 est
 

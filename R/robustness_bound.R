@@ -27,12 +27,14 @@
 #'                  time_var = "year",
 #'                  val_times = 2004:2007,
 #'                  unit_var = "state",
-#'                  nsim = 100)
+#'                  nsim = 100,
+#'                  verbose = FALSE)
 #' 
 #' est <- apm_est(fits,
-#'                 post_time = 2008,
-#'                 M = 1,
-#'                 R = 20)
+#'                post_time = 2008,
+#'                M = 1,
+#'                R = 20,
+#'                verbose = FALSE)
 #' 
 #' est
 #' 

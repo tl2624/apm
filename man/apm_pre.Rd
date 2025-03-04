@@ -78,7 +78,8 @@ fits <- apm_pre(models, data = ptpdata,
                  group_var = "group",
                  time_var = "year",
                  val_times = 1999:2007,
-                 unit_var = "state")
+                 unit_var = "state",
+                 verbose = FALSE)
 
 fits
 

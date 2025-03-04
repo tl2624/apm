@@ -142,9 +142,7 @@ vcovSUEST <- function(fits, cluster = NULL) {
   cov.unscaled <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
   dimnames(cov.unscaled) <- list(names(coef.p), names(coef.p))
   
-  df <- p + x$df.residual
-  
-  out <- cov.unscaled * df
+  out <- cov.unscaled * (p + x$df.residual)
   
   if (class(x)[1L] == "glm" && !substr(x$family$family, 1L, 17L) %in% c("poisson", "binomial", "Negative Binomial")) {
     ww <- weights(x, "working")

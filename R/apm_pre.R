@@ -46,7 +46,8 @@
 #'                  group_var = "group",
 #'                  time_var = "year",
 #'                  val_times = 1999:2007,
-#'                  unit_var = "state")
+#'                  unit_var = "state",
+#'                  verbose = FALSE)
 #' 
 #' fits
 #' 
@@ -141,7 +142,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   #Get observed means at each time point
   times <- sort(unique(data[[time_var]]))
   times <- times[times <= max(val_times)]
-  y <- model.response(model.frame(models[[1L]]$formula, data = data))
+  y <- .get_y(models, data)
   
   observed_val_means <- setNames(lapply(times, function(t) {
     setNames(
@@ -153,8 +154,8 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   }), times)
   
   pred_errors_array <- array(NA_real_,
-                           dim = c(length(val_times), length(models), length(group_levels)),
-                           dimnames = list(val_times, names(models), group_levels))
+                             dim = c(length(val_times), length(models), length(group_levels)),
+                             dimnames = list(val_times, names(models), group_levels))
   
   if (verbose) {
     cat("Fitting models...")
@@ -278,8 +279,8 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
       }
       
       predicted_val_means_s_i <- vapply(group_levels, function(g) {
-          .wtd_mean(p, val_weights[[f]], val_groups[[f]][[g]])
-        }, numeric(1L))
+        .wtd_mean(p, val_weights[[f]], val_groups[[f]][[g]])
+      }, numeric(1L))
       
       mat[ti, mi] <- (observed_val_means[[val_time_c]][2L] - observed_val_means[[val_time_c]][1L]) -
         (predicted_val_means_s_i[2L] - predicted_val_means_s_i[1L])

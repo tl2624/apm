@@ -1,6 +1,6 @@
 # Fit one model; mod: output of .modify_formula_and_data()
 .fit_one_model <- function(mod, weights = NULL, time_var, val_time, family) {
- 
+  
   
   # Effectively subset without dropping any observations
   if (is.null(weights)) {
@@ -8,7 +8,7 @@
   }
   
   is.na(weights)[mod$data[[time_var]] >= val_time] <- TRUE
-
+  
   # Model fitting function; note: need do.call() to correctly process `weights`
   fit_fun <- {
     if (identical(family$family, "Negative Binomial"))
@@ -29,10 +29,10 @@
     else 
       function(.formula, .data, .family, .weights = NULL) {
         out <- do.call("glm", list(.formula, data = .data,
-                            family = .family,
-                            weights = .weights,
-                            na.action = "na.exclude",
-                            x = TRUE, y = TRUE))
+                                   family = .family,
+                                   weights = .weights,
+                                   na.action = "na.exclude",
+                                   x = TRUE, y = TRUE))
         
         out$call$family <- str2lang(sprintf('%s("%s")',
                                             .family$family,
@@ -49,7 +49,7 @@
   out$call$data <- quote(.data)
   out$call$na.action <- NULL
   out$call$weights <- quote(.weights)
-
+  
   out
 }
 
@@ -74,7 +74,7 @@
   outcome <- NULL
   # Log outcome if requested
   if (model$log) {
-    outcome <- model.response(model.frame(formula, data = data))
+    outcome <- model.response(model.frame(update(formula, . ~ 1), data = data))
     if (min(outcome) <= 0) {
       chk::err("`log` cannot be `TRUE` when the outcome takes on values of 0 or lower")
     }
@@ -84,7 +84,7 @@
   
   if (model$diff_k > 0 && model$family$link == "log") {
     if (is.null(outcome)) {
-      outcome <- model.response(model.frame(formula, data = data))
+      outcome <- model.response(model.frame(update(formula, . ~ 1), data = data))
     }
     
     if (min(outcome) <= 0) {
@@ -152,6 +152,10 @@
   list(formula = formula, data = data)
 }
 
+.get_y <- function(models, data) {
+  model.response(model.frame(update(models[[1L]]$formula, . ~ 1), data = data))
+}
+
 # Prepares validation data to be used in .predict_quick() to compute predictions
 .make_predict_prep <- function(fit, newdata) {
   tt <- terms(fit)
@@ -209,7 +213,7 @@
       if (is.null(fit[["y"]])) model.response(model.frame(fit))
       else fit[["y"]]
     }
-
+    
     new_fit <- lm.wfit(x = x, y = y, w = weights, offset = fit$offset)
     
     fit <- .list_modify(fit, new_fit)
@@ -220,7 +224,7 @@
       if (is.null(fit[["y"]])) model.response(model.frame(fit))
       else fit[["y"]]
     }
-
+    
     start <- fit$coefficients
     
     new_fit <- do.call(fit$method,

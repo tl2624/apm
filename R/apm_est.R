@@ -1,4 +1,4 @@
-#' Estimate ATTS from models fits
+#' Estimate ATTs from models fits
 #' 
 #' @description `apm_est()` computes the ATTs from the models previously fit by [apm_pre()], choosing the optimal one by minimizing the largest absolute average prediction error across validation times. Optionally, this process can be simulated to arrive at a distribution of ATTs that accounts for the uncertainty in selecting the optimal model. `plot()` plots the resulting ATT(s).
 #' 
@@ -12,18 +12,22 @@
 #' @param level the desired confidence level. Set to 0 to ignore sampling variation in computing the interval bounds. Default is .95.
 #' @param label `logical`; whether to label the ATT estimates. Requires \pkg{ggrepel} to be installed. Default is `TRUE`.
 #' @param size.weights `logicsl`; whether to size the points based on their BMA weights. Default is `TRUE`.
+#' @param cl a cluster object created by [parallel::makeCluster()], an integer to indicate number of child-processes (ignored on Windows) for parallel evaluations, or `"future"` to use a future backend. `NULL` (default) refers to sequential evaluation. See [fwb::fwb()] for details and issues related to replicability.
+#' @param \dots other arguments passed to [fwb::fwb()].
 #' 
 #' @returns
 #' `apm_est()` returns an `apm_est` object, which contains the ATT estimates and their variance estimates. The following components are included:
 #' \describe{
 #' \item{BMA_att}{the BMA-weighted ATT}
-#' \item{atts}{a matrix containing the ATT estimates from each model (when `all_models = FALSE`, only models with positive BMA weights are included)}
+#' \item{atts}{a 1-column matrix containing the ATT estimates from each model (when `all_models = FALSE`, only models with positive BMA weights are included)}
 #' \item{BMA_var}{the total variance estimate for the BMA-weighted ATT incorporating the variance due to sampling and due to model selection}
 #' \item{BMA_var_b}{the bootstrap-based component of the variance estimate for the BMA-weighted ATT due to sampling}
 #' \item{BMA_var_m}{the component of the variance estimate for the BMA-weighted ATT due to model selection}
 #' \item{M}{the value of the sensitivity parameter `M`}
 #' \item{post_time}{the value supplied to `post_time`}
-#' \item{pred_errors}{a matrix containing the difference in average prediction errors for each model and each pre-treatment validation period}
+#' \item{observed_means}{a matrix of the observed outcome means at each pre-treatment validation period}
+#' \item{pred_errors}{an array containing the average prediction errors for each model and each pre-treatment validation period}
+#' \item{pred_error_diffs}{a matrix containing the difference in average prediction errors between groups for each model and each pre-treatment validation period}
 #' \item{BMA_weights}{the BMA weights computed by `apm_pre()` (when `all_models = FALSE`, only positive BMA weights are included)}
 #' \item{boot_out}{an `fwb` object containing the bootstrap results}
 #' }
@@ -40,7 +44,6 @@
 #' `summary()` displays the BMA-weighted ATT estimate, its standard error, and Wald confidence intervals. When `M` is greater than 0, bounds for the set-identified ATT are displayed in the confidence interval bound columns. The lower bound is computed as \eqn{\text{LB} - \sigma_{LB}Z_{l}} and the upper bound as \eqn{\text{UB} + \sigma_{UB}Z_{l}}, where \eqn{\text{LB}} and \eqn{\text{UB}} are the lower and upper bounds, \eqn{\sigma_{LB}} and \eqn{\sigma_{UB}} are their variances accounting for sampling and model selection, and \eqn{Z_{l}} is the critical Z-statistic for confidence level \eqn{l}. To display the set-identification bounds themselves, one should set `level = 0`.
 #' 
 #' @seealso [apm_pre()] for computing the BMA weights; [fwb::fwb()] for the fractional weighted bootstrap.
-#' 
 #' 
 #' @examples 
 #' data("ptpdata")
@@ -59,12 +62,14 @@
 #'                  time_var = "year",
 #'                  val_times = 2004:2007,
 #'                  unit_var = "state",
-#'                  nsim = 100)
+#'                  nsim = 100,
+#'                  verbose = FALSE)
 #' 
 #' est <- apm_est(fits,
-#'                 post_time = 2008,
-#'                 M = 1,
-#'                 R = 20)
+#'                post_time = 2008,
+#'                M = 1,
+#'                R = 20,
+#'                verbose = FALSE)
 #' 
 #' est
 #' 
@@ -123,10 +128,13 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
     
     BMA_weights <- BMA_weights[models_to_keep]
   }
- 
+  
   #Prep everything for bootstrap that doesn't involve weights
-  mods <- .subset_m_post_list <- .val_data_m_post_list <- .val_groups_m_post_list <- y_m_post_list <-
+  mods <- .subset_m_post_list <- .val_data_m_post_list <- .val_groups_m_post_list <-
     vector("list", length(models))
+  
+  y <- .get_y(models, data)
+  
   for (mi in models_to_keep) {
     mods[[mi]] <- .modify_formula_and_data(models[[mi]],
                                            data = data, group_var = group_var,
@@ -141,17 +149,10 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
     .val_groups_m_post_list[[mi]] <- setNames(lapply(group_levels, function(g) {
       which(.val_data_m_post_list[[mi]][[group_var]] == g)
     }), group_levels)
-    
-    y_m_post_list[[mi]] <- model.response(model.frame(update(mods[[mi]]$formula, . ~ 1),
-                                                      data = .val_data_m_post_list[[mi]]))
-    
-    if (models[[mi]]$log) {
-      y_m_post_list[[mi]] <- exp(y_m_post_list[[mi]])
-    }
   }
   
   if (M > 0) {
-    .subset_f_post_list <- .val_data_f_val_list <- .val_groups_f_val_list <- y_f_val_list <-
+    .subset_f_post_list <- .val_data_f_val_list <- .val_groups_f_val_list <-
       .predict_f_val_list <- vector("list", length(fits$val_fits))
     
     for (fi in fits_to_keep) {
@@ -159,7 +160,7 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
       ti <- grid[["time_ind"]][fi]
       
       d <- mods[[mi]]$data
-
+      
       .subset_f_post_list[[fi]] <- which(d[[time_var]] == val_times[ti])
       
       .val_data_f_val_list[[fi]] <- d[.subset_f_post_list[[fi]], , drop = FALSE]
@@ -168,13 +169,6 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
         which(.val_data_f_val_list[[fi]][[group_var]] == g)
       }), group_levels)
       
-      y_f_val_list[[fi]] <- model.response(model.frame(update(mods[[mi]]$formula, . ~ 1),
-                                                       data = .val_data_f_val_list[[fi]]))
-      
-      if (models[[mi]]$log) {
-        y_f_val_list[[fi]] <- exp(y_f_val_list[[fi]])
-      }
-
       .predict_f_val_list[[fi]] <- .make_predict_prep(fits$val_fits[[fi]],
                                                       .val_data_f_val_list[[fi]])
     }
@@ -196,11 +190,11 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
       
       .val_groups_mi <- .val_groups_m_post_list[[mi]]
       
-      y <- y_m_post_list[[mi]]
+      .val_y_mi <- y[.subset_mi]
       
       observed_val_means_i <- setNames(
         vapply(group_levels, function(g) {
-          .wtd_mean(y, .val_weights_mi, .val_groups_mi[[g]])
+          .wtd_mean(.val_y_mi, .val_weights_mi, .val_groups_mi[[g]])
         }, numeric(1L)),
         group_levels
       )
@@ -235,7 +229,7 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
       .atts[mi] <- (observed_val_means_i["1"] - observed_val_means_i["0"]) -
         (predicted_val_means_i["1"] - predicted_val_means_i["0"])
     }
-
+    
     if (M == 0) {
       return(.atts[models_to_keep])
     }
@@ -256,11 +250,11 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
       
       .val_groups_fi <- .val_groups_f_val_list[[fi]]
       
-      y <- y_f_val_list[[fi]]
+      .val_y_fi <- y[.subset_fi]
       
       observed_val_means_i <- setNames(
         vapply(group_levels, function(g) {
-          .wtd_mean(y, .val_weights_fi, .val_groups_fi[[g]])
+          .wtd_mean(.val_y_fi, .val_weights_fi, .val_groups_fi[[g]])
         }, numeric(1L)),
         group_levels
       )
@@ -298,8 +292,11 @@ apm_est <- function(fits, post_time, M = 0, R = 1000L, all_models = FALSE, cl = 
                        statistic = .boot_fun,
                        R = R,
                        cluster = data[[unit_var]],
+                       strata = NULL,
+                       drop0 = FALSE,
                        verbose = verbose,
-                       cl = cl, ...)
+                       cl = cl,
+                       ...)
   
   att_inds <- seq_along(models_to_keep)
   
