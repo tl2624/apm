@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">apm</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9002</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/tl2624/apm/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -52,9 +53,9 @@
       <h1>Introduction to the `apm` Package</h1>
                         <h4 data-toc-skip class="author"></h4>
             
-            <h4 data-toc-skip class="date">2025-02-27</h4>
+            <h4 data-toc-skip class="date">2025-03-04</h4>
       
-
+      <small class="dont-index">Source: <a href="https://github.com/tl2624/apm/blob/main/vignettes/apm.Rmd" class="external-link"><code>vignettes/apm.Rmd</code></a></small>
       <div class="d-none name"><code>apm.Rmd</code></div>
     </div>
 
@@ -78,20 +79,6 @@ and Comparative Interrupted Time Series (CITS).</p>
 <p>Because many models may be plausible for this prediction task, we
 combine them using Bayesian model averaging. We weight each model by its
 robustness to violations of the causal assumption.</p>
-</div>
-<div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h2>
-<p>To install the development version from GitHub, use:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Install devtools if not already installed</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Install apm package from GitHub if not already installed</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"tl2624/apm"</span><span class="op">)</span></span></code></pre></div>
-<p>Load the package:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ngreifer.github.io/apm/" class="external-link">apm</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="methodology-overview">Methodology Overview<a class="anchor" aria-label="anchor" href="#methodology-overview"></a>
@@ -143,12 +130,11 @@ This enables sensitivity measures such as:</p>
 <ul>
 <li>constructing sensitivity bounds for a particular
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
-as in <span class="citation">Manski and Pepper (<a href="#ref-manskipepper2018">2018</a>)</span> and <span class="citation">Rambachan and Roth (<a href="#ref-rambachanroth2023">2023</a>)</span><br>
+as in <span class="citation">Manski and Pepper (<a href="#ref-manskipepper2018">2018</a>)</span> and <span class="citation">Rambachan and Roth (<a href="#ref-rambachanroth2023">2023</a>)</span>
 </li>
 <li>finding the value of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
-that would reverse the sign of the causal effect<br>
-</li>
+that would reverse the sign of the causal effect</li>
 <li>finding the value of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
 that would lead the confidence interval to include 0</li>
@@ -172,12 +158,14 @@ and constructs both statistical and causal bounds around it.</p></li>
 2007 repeal of its permit-to-purchase law on gun homicide rates <span class="citation">(<a href="#ref-websteretal2014">Webster, Crifasi, and
 Vernick 2014</a>; <a href="#ref-hasegawaetal2019">Hasegawa, Webster, and
 Small 2019</a>)</span>.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tl2624/apm" class="external-link">apm</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="load-example-data">Load Example Data<a class="anchor" aria-label="anchor" href="#load-example-data"></a>
 </h3>
 <p>The package provides an example dataset with pre- and post-policy
 homicide rates:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"ptpdata"</span>, package <span class="op">=</span> <span class="st">"apm"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Inspect the dataset</span></span>
@@ -254,7 +242,7 @@ two options for outcome differences (no offset and immediate prior
 outcome), two options for the outcome scale (original and log
 transformed), and two options for time trends (no time trend and linear
 time trend), to get a set of candidate models:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apm_mod.html">apm_mod</a></span><span class="op">(</span>formula_list <span class="op">=</span> <span class="va">crude_rate</span> <span class="op">~</span> <span class="fl">1</span>,</span>
 <span>                  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
 <span>                  lag <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span>,</span>
@@ -277,10 +265,10 @@ these differences in average prediction errors, we compute the Bayesian
 model averaging (BMA) weights that are eventually passed to
 <code><a href="../reference/apm_est.html">apm_est()</a></code> for estimation of the average effect of treatment
 on the treated (the ATT).</p>
-<p>The function <code>apm_pre</code> does the model fitting. It requires
-a data frame that contains a group indicator variable and a time
-variable. We specify <code>1999:2007</code> as the validation years in
-which each model will be. Each validation year’s fit will be based on
+<p>The function <code><a href="../reference/apm_pre.html">apm_pre()</a></code> does the model fitting. It
+requires a data frame that contains a group indicator variable and a
+time variable. We specify <code>1999:2007</code> as the validation years
+in which each model will be. Each validation year’s fit will be based on
 all data prior to that year. Therefore, we set the first validation
 period to 1999 so that even in the first validation year, we can train
 the models on five years of data (i.e., <code>1994:1998</code>). We
@@ -288,7 +276,7 @@ specify the number of quasi-posterior draws using the
 <code>nsim = 1000</code> argument; more draws gives a better
 approximation to the model posterior, but can slow down the
 computation.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Set seed for reproducibility: ensures random sampling from </span></span>
 <span><span class="co"># multivariate Normal produces same results each time code is run</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">098556947</span><span class="op">)</span></span>
@@ -298,28 +286,48 @@ computation.</p>
 <span>                time_var <span class="op">=</span> <span class="st">"year"</span>,</span>
 <span>                unit_var <span class="op">=</span> <span class="st">"state"</span>,</span>
 <span>                val_times <span class="op">=</span> <span class="fl">1999</span><span class="op">:</span><span class="fl">2007</span>,</span>
-<span>                nsim <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span></code></pre></div>
+<span>                nsim <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span></code></pre></div>
+<p>We can view the largest average differential prediction error for
+each model and the BMA weights given to each model using
+<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> on the returned object:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fits</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##                                   BMA weights Max|errors|  </span></span>
+<span><span class="co">## FE (log)                                0.000       0.826  </span></span>
+<span><span class="co">## AR(1) + FE (log)                        0.960       0.584 *</span></span>
+<span><span class="co">## FE (log, 1st diff)                      0.000       0.874  </span></span>
+<span><span class="co">## FE                                      0.000       0.850  </span></span>
+<span><span class="co">## AR(1) + FE                              0.038       0.630  </span></span>
+<span><span class="co">## FE (1st diff)                           0.000       0.997  </span></span>
+<span><span class="co">## linear trend + FE (log)                 0.000       0.988  </span></span>
+<span><span class="co">## linear trend + AR(1) + FE (log)         0.000       0.933  </span></span>
+<span><span class="co">## linear trend + FE (log, 1st diff)       0.000       1.207  </span></span>
+<span><span class="co">## linear trend + FE                       0.002       1.102  </span></span>
+<span><span class="co">## linear trend + AR(1) + FE               0.000       0.719  </span></span>
+<span><span class="co">## linear trend + FE (1st diff)            0.000       1.264  </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Use `plot()` to plot prediction errors and BMA weights.</span></span></code></pre>
 <p>We can plot the simulation-based posterior distribution of which
 model is most robust. The probabilities are the proportions of
 simulations in which each model is the winner.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fits</span>, type <span class="op">=</span> <span class="st">"weights"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="apm_files/figure-html/fig.model_weights-1.png" alt="Bayesian Model Averaging (BMA) Weights for Model Selection." width="\textwidth"><p class="caption">
 Bayesian Model Averaging (BMA) Weights for Model Selection.
 </p>
 </div>
-<p>We can see the differential prediction errors in each model and year
+<p>We can see the differential prediction errors in each model and year.
 Here, the winning model is highlighted: it is the model that includes a
 lag-1 outcome as a predictor and log-transforms the outcome. The maximum
 differential prediction error was observed in 2005.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fits</span>, type <span class="op">=</span> <span class="st">"errors"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="apm_files/figure-html/unnamed-chunk-6-1.png" width="\textwidth" style="display: block; margin: auto;"></p>
 <p>The plot below shows the predictions from this model in each
 validation period. The observed outcomes are displayed as points and the
 predicted outcomes as lines.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fits</span>, type <span class="op">=</span> <span class="st">"predict"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="apm_files/figure-html/unnamed-chunk-7-1.png" width="\textwidth" style="display: block; margin: auto;"></p>
 <p>Finally, we can also show the winning model’s corrected predictions,
@@ -328,7 +336,7 @@ that is, after incorporating the prediction error in the control group
 To observe the corrected predictions, we can set
 <code>type = "corrected"</code>, which is the prediction for the treated
 group, corrected for the comparison group’s prediction error.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fits</span>, type <span class="op">=</span> <span class="st">"corrected"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="apm_files/figure-html/unnamed-chunk-8-1.png" width="\textwidth" style="display: block; margin: auto;"></p>
 </div>
@@ -336,7 +344,7 @@ group, corrected for the comparison group’s prediction error.</p>
 <h3 id="estimation-and-inference">Estimation and Inference<a class="anchor" aria-label="anchor" href="#estimation-and-inference"></a>
 </h3>
 <p>To estimate the ATT and conduct inference, we feed the output of a
-call to <code>apm_pre</code> into <code>apm_est</code>. The
+call to <code><a href="../reference/apm_pre.html">apm_pre()</a></code> into <code><a href="../reference/apm_est.html">apm_est()</a></code>. The
 <code>M</code> argument is the sensitivity parameter for set
 identification, which by default is set to <code>M = 0</code>. When
 <code>M</code> is set to a value greater than 0, <code><a href="../reference/apm_est.html">apm_est()</a></code>
@@ -345,7 +353,7 @@ bounds can incorporate both the uncertainty due to possible causal
 violations and sampling uncertainty. The <code>R</code> argument is the
 number of bootstrap iterations used to estimate the sampling variance,
 holding model uncertainty fixed.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">est</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/apm_est.html">apm_est</a></span><span class="op">(</span>fits <span class="op">=</span> <span class="va">fits</span>,</span>
 <span>               post_time <span class="op">=</span> <span class="fl">2008</span>,</span>
 <span>               M <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -355,11 +363,11 @@ holding model uncertainty fixed.</p>
 following. The <code>level = 0.95</code> argument specifies the
 statistical confidence level; to ignore sampling uncertainty, set
 <code>level = 0</code>.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">est</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##       Estimate Std. Error CI low CI high z_value Pr(&gt;|z|)    </span></span>
-<span><span class="co">## ATT     1.1417     0.1217 0.9031  1.3803   9.379   &lt;2e-16 ***</span></span>
-<span><span class="co">## M = 1        .          . 0.1501  2.0242       .        .    </span></span>
+<span><span class="co">## ATT     1.1431     0.1224 0.9031  1.3830   9.337   &lt;2e-16 ***</span></span>
+<span><span class="co">## M = 1        .          . 0.1380  2.0187       .        .    </span></span>
 <span><span class="co">## ---</span></span>
 <span><span class="co">## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre>
 <p>The standard error is the square root of the sum of two variances:
@@ -381,7 +389,7 @@ correspond to the BMA weights.</p>
 maximum absolute differences in prediction errors (x axis) suggests that
 we do not face a stark trade-off between model plausibility and
 robustness.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">est</span><span class="op">)</span></span></code></pre></div>
 <p><img src="apm_files/figure-html/unnamed-chunk-11-1.png" width="\textwidth" style="display: block; margin: auto;"></p>
 </div>
@@ -391,31 +399,31 @@ robustness.</p>
 <p>We can also apply a sensitivity analysis to increasing values of
 <code>M</code>. For example, below we estimate the ATT’s bounds under
 values of <code>M</code> from 1 to 2 in increments of 0.25.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">est</span>, M <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span>from <span class="op">=</span> <span class="fl">1</span>, to <span class="op">=</span> <span class="fl">2</span>, by <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##          Estimate Std. Error  CI low CI high z_value Pr(&gt;|z|)    </span></span>
-<span><span class="co">## ATT        1.1417     0.1217  0.9031  1.3803   9.379   &lt;2e-16 ***</span></span>
-<span><span class="co">## M = 1           .          .  0.1501  2.0242       .        .    </span></span>
-<span><span class="co">## M = 1.25        .          . -0.0525  2.2168       .        .    </span></span>
-<span><span class="co">## M = 1.5         .          . -0.2573  2.4150       .        .    </span></span>
-<span><span class="co">## M = 1.75        .          . -0.4638  2.6170       .        .    </span></span>
-<span><span class="co">## M = 2           .          . -0.6714  2.8214       .        .    </span></span>
+<span><span class="co">## ATT        1.1431     0.1224  0.9031  1.3830   9.337   &lt;2e-16 ***</span></span>
+<span><span class="co">## M = 1           .          .  0.1380  2.0187       .        .    </span></span>
+<span><span class="co">## M = 1.25        .          . -0.0666  2.2117       .        .    </span></span>
+<span><span class="co">## M = 1.5         .          . -0.2732  2.4107       .        .    </span></span>
+<span><span class="co">## M = 1.75        .          . -0.4814  2.6137       .        .    </span></span>
+<span><span class="co">## M = 2           .          . -0.6906  2.8193       .        .    </span></span>
 <span><span class="co">## ---</span></span>
 <span><span class="co">## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre>
 <p>This output shows that our 95% confidence interval for the ATT’s
 lower bound excludes 0 when <code>M = 1.25</code>, but not when
 <code>M = 1.5</code>. To find the exact changepoint value of
 <code>M</code>, we can run the following.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/robustness_bound.html">robustness_bound</a></span><span class="op">(</span><span class="va">est</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 1.185545</span></span></code></pre>
+<pre><code><span><span class="co">## [1] 1.168991</span></span></code></pre>
 <p>We can also run <code><a href="../reference/robustness_bound.html">robustness_bound()</a></code> when the level is
 <code>level = 0</code>, which will give us the value of <code>M</code>
 in which the sensitivity bound (not statistical confidence bounds) begin
 to bracket 0.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/robustness_bound.html">robustness_bound</a></span><span class="op">(</span><span class="va">est</span>, level <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 1.950184</span></span></code></pre>
+<pre><code><span><span class="co">## [1] 1.948426</span></span></code></pre>
 <p>As we would expect, the changepoint value of <code>M</code> is
 greater when <code>level = 0</code>.</p>
 </div>
@@ -433,7 +441,7 @@ the BMA estimator is 1.95. That is, if differential prediction errors
 were nearly twice what were seen in the validation periods, the point
 estimate would no longer indicate an increase in the gun homicide rate.
 Additionally, the lower bound estimator’s 95% confidence interval
-includes zero when M reaches 1.19. That is, at this multiplier of the
+includes zero when M reaches 1.17. That is, at this multiplier of the
 differential prediction errors seen in the validation period, our
 statistical uncertainty bounds around the effect estimate would begin to
 include 0.</p>
