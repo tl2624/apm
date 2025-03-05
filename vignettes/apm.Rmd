@@ -1,10 +1,8 @@
 ---
 title: "Introduction to the `apm` Package"
-author: ""
 date: "`r Sys.Date()`"
 output:
   html_vignette:
-    df_print: kable
 bibliography: apm_vignette_bib.bib
 link-citations: true
 vignette: >

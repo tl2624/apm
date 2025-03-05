@@ -8,20 +8,20 @@ Authors@R:
            comment = c(ORCID = "0000-0003-0366-3929")),
     person("Noah", "Greifer", email = "ngreifer@iq.harvard.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-3067-7154")))
-Description: In panel data settings, specifies set of candidate models, fits them to data from pre-treatment validation periods, and selects model as average over candidate models, weighting each by posterior probability of being most robust given its differential average prediction errors in pre-treatment validation periods. Subsequent estimation and inference of causal effect's bounds accounts for both model and sampling uncertainty, and calculates the robustness changepoint value at which bounds go from excluding to including 0. Package also includes a range of diagnostic plots, such as those illustrating models' differential average prediction errors and the posterior distribution of which model is most robust.
+Description: In panel data settings, specifies set of candidate models, fits them to data from pre-treatment validation periods, and selects model as average over candidate models, weighting each by posterior probability of being most robust given its differential average prediction errors in pre-treatment validation periods. Subsequent estimation and inference of causal effect's bounds accounts for both model and sampling uncertainty, and calculates the robustness changepoint value at which bounds go from excluding to including 0. The package also includes a range of diagnostic plots, such as those illustrating models' differential average prediction errors and the posterior distribution of which model is most robust.
 License: GPL (>= 2)
 Depends: 
     R (>= 3.5.0)
 Imports:
   stats,
-  ggplot2,
+  ggplot2 (>= 3.5.1),
   ggh4x (>= 0.2.8),
-  ggrepel,
+  ggrepel (>= 0.9.6),
   MASS,
   sandwich,
   pbapply (>= 1.7-2),
   fwb (>= 0.3.0),
-  chk (>= 0.9.0)
+  chk (>= 0.10.0)
 Suggests: 
     parallel,
     knitr,
