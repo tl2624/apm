@@ -1,0 +1,41 @@
+\documentclass{standalone}
+
+\usepackage{tikz}
+
+\definecolor{myBlue}{RGB}{15,158,213}
+\definecolor{myPurple}{RGB}{160,43,147}
+\definecolor{myOrange}{RGB}{233,113,50}
+
+\begin{document}
+	\begin{tikzpicture}
+	%%% Plot 1
+	\draw[ultra thick,myBlue!25]  plot[smooth, tension=.7] coordinates {(-3.65,4.13) (-3,4.23) (-2,4.24) (-0.95,4.26) (0.5,4.43) (1.95,4.65)};
+	\draw[ultra thick,myBlue!25,dashed] (1.95,4.65) -- (3.1,5.15);
+	\draw[ultra thick,myBlue]  plot[smooth, tension=.7] coordinates {(-3.65,4.13) (-3,4.4) (-2,4.8) (-0.75,5.26) (0.54,5.54) (1.95,5.7)};
+	\draw[ultra thick,myBlue,dashed] (1.95,5.7) -- (3.05,6.1);
+	\draw[ultra thick,myBlue] (2.62,3.58) -- (2.86,2.82) -- (2.34,2.82) -- cycle;
+	\draw[ultra thick,myBlue!25] (3.38,3.58) -- (3.62,2.82) -- (3.1,2.82) -- cycle;
+	\draw[ultra thick] (3,5.7) circle [radius=4pt];
+	\draw[ultra thick,gray] (3,4.9) circle [radius=4pt];
+	
+	%%% Plot 2
+	\draw[ultra thick,myPurple!25]  plot[smooth, tension=.7] coordinates {(-3.57,-0.45) (-3,-0.09) (-2,0) (-1.27,0.08) (-0.14,0.11) (0.86,-0.07) (1.95,0.35)};
+	\draw[ultra thick,myPurple!25,dashed] (1.95,0.35) -- (2.96,0.89);
+	\draw[ultra thick,myPurple]  plot[smooth, tension=.7] coordinates {(-3.57,-0.45) (-2.94,-0.16) (-2.32,0.24) (-1.56,0.84) (-0.25,1.02) (0.16,1.06) (0.76,1.18) (1.89,1.44)};
+	\draw[ultra thick,myPurple,dashed] (1.89,1.44) -- (2.95,1.68);
+	\draw[ultra thick,myPurple] (2.62,-0.32) -- (2.86,-1.08) -- (2.34,-1.08) -- cycle;
+	\draw[ultra thick,myPurple!25] (3.38,-0.32) -- (3.62,-1.08) -- (3.1,-1.08) -- cycle;
+	\draw[ultra thick] (3,1.68) circle [radius=4pt];
+	\draw[ultra thick,gray] (3,0.86) circle [radius=4pt];
+	
+	%%% Plot 3
+	\draw[very thick,myOrange!25]  plot[smooth, tension=.7] coordinates {(-3.22,-4.26) (-1.38,-4.14) (-0.72,-4.14) (0.5,-4.02) (1,-4.04) (2,-4)};
+	\draw[very thick,myOrange!25,dashed] (2,-4) -- (2.92,-3.94);
+	\draw[very thick,myOrange]  plot[smooth, tension=.7] coordinates {(-3.26,-4.12) (-2.2,-3.9) (-1,-3.72) (0,-3.58) (1,-3.42) (2,-3.24)};
+	\draw[very thick,myOrange,dashed] (2,-3.24) -- (2.86,-3.04);
+	\draw[very thick,myOrange] (2.62,-5.02) -- (2.86,-5.78) -- (2.34,-5.78) -- cycle;
+	\draw[very thick,myOrange!25] (3.38,-5.02) -- (3.62,-5.78) -- (3.1,-5.78) -- cycle;
+	\draw[ultra thick] (3,-2.82) circle [radius=4pt];
+	\draw[ultra thick,gray] (3,-3.64) circle [radius=4pt];
+	\end{tikzpicture}
+\end{document}

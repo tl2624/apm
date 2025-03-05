@@ -1,0 +1,27 @@
+\documentclass{standalone}
+
+\usepackage{tikz}
+\usepackage{amsmath}
+
+\definecolor{myBlue}{RGB}{15,158,213}
+\definecolor{myPurple}{RGB}{160,43,147}
+\definecolor{myOrange}{RGB}{233,113,50}
+
+\begin{document}
+%	\begin{tikzpicture}
+%	%%% Plot 1
+%	\draw[very thick,myBlue] (2.62,3.58) -- (2.86,2.82) -- (2.34,2.82) -- cycle;
+%	\draw[very thick,myBlue!25] (3.38,3.58) -- (3.62,2.82) -- (3.1,2.82) -- cycle;
+%	
+%	%%% Plot 2
+%	\draw[very thick,myPurple] (2.62,-0.32) -- (2.86,-1.08) -- (2.34,-1.08) -- cycle;
+%	\draw[very thick,myPurple!25] (3.38,-0.32) -- (3.62,-1.08) -- (3.1,-1.08) -- cycle;
+%	
+%	%%% Plot 3
+%	\draw[very thick,myOrange] (2.62,-5.02) -- (2.86,-5.78) -- (2.34,-5.78) -- cycle;
+%	\draw[very thick,myOrange!25] (3.38,-5.02) -- (3.62,-5.78) -- (3.1,-5.78) -- cycle;
+%	\end{tikzpicture}
+$\left(\text{\tikz[baseline={([yshift=-1ex]current bounding box.center)}]{\fill[white](-1,1) rectangle (1,-1);\fill[myBlue] (0,0) -- (60:1) arc (60:150:1) -- cycle;}}\times\text{\tikz[baseline={([yshift=-1ex]current bounding box.center)}]\draw[ultra thick,myBlue] (2.62,3.58) -- (2.86,2.82) -- (2.34,2.82) -- cycle;\tikz[baseline={([yshift=-1ex]current bounding box.center)}]\draw[ultra thick,myBlue!25] (3.38,3.58) -- (3.62,2.82) -- (3.1,2.82) -- cycle;}\right) +
+\left(\text{\tikz[baseline={([yshift=-1ex]current bounding box.center)}]{\fill[white](-1,1) rectangle (1,-1);\fill[myPurple] (0,0) -- (0:1) arc (0:-210:1) -- cycle;}}\times\text{\tikz[baseline={([yshift=-1ex]current bounding box.center)}]\draw[ultra thick,myPurple] (2.62,3.58) -- (2.86,2.82) -- (2.34,2.82) -- cycle;\tikz[baseline={([yshift=-1ex]current bounding box.center)}]\draw[ultra thick,myPurple!25] (3.38,3.58) -- (3.62,2.82) -- (3.1,2.82) -- cycle;}\right) +
+\left(\text{\tikz[baseline={([yshift=-1ex]current bounding box.center)}]{\fill[white](-1,1) rectangle (1,-1);\fill[myOrange] (0,0) -- (0:1) arc (0:60:1) -- cycle;}}\times\text{\tikz[baseline={([yshift=-1ex]current bounding box.center)}]\draw[ultra thick,myOrange] (2.62,3.58) -- (2.86,2.82) -- (2.34,2.82) -- cycle;\tikz[baseline={([yshift=-1ex]current bounding box.center)}]\draw[ultra thick,myOrange!25] (3.38,3.58) -- (3.62,2.82) -- (3.1,2.82) -- cycle;}\right)$
+\end{document}

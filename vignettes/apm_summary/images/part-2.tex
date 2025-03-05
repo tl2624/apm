@@ -1,0 +1,19 @@
+%%% part-2.tex
+
+\documentclass{standalone}
+
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{amsmath}
+
+\definecolor{myBlue}{RGB}{15,158,213}
+\definecolor{myPurple}{RGB}{160,43,147}
+\definecolor{myOrange}{RGB}{233,113,50}
+
+\begin{document}
+	$\setlength\arraycolsep{0.5pt}\renewcommand{\arraystretch}{0.5}\begin{bmatrix}
+		\text{\tikz[line cap=round]\draw[ultra thick,myBlue,rounded corners=3pt](-0.5,0) -- (-0.25,0) .. controls (0,1) and (0,1) .. (0.25,0) -- (0.5,0);}&&\\
+		&\text{\tikz[line cap=round]\draw[ultra thick,myPurple,rounded corners=3pt](-0.5,0) -- (-0.25,0) .. controls (0,1) and (0,1) .. (0.25,0) -- (0.5,0);}&\\
+		&&\text{\tikz[line cap=round]\draw[ultra thick,myOrange,rounded corners=3pt](-0.5,0) -- (-0.25,0) .. controls (0,1) and (0,1) .. (0.25,0) -- (0.5,0);}\\
+	\end{bmatrix}$
+\end{document}
