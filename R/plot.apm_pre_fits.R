@@ -30,20 +30,20 @@
 #' # Combination of 8 models: 2 baseline formulas,
 #' # 2 families, 2 lags
 #' models <- apm_mod(crude_rate ~ 1,
-#'                    family = "gaussian",
-#'                    time_trend = 0:1,
-#'                    lag = 0:1,
-#'                    diff_k = 0:1)
+#'                   family = "gaussian",
+#'                   time_trend = 0:1,
+#'                   lag = 0:1,
+#'                   diff_k = 0:1)
 #' models
 #' 
 #' # Fit the models to data
 #' fits <- apm_pre(models, data = ptpdata,
-#'                  group_var = "group",
-#'                  time_var = "year",
-#'                  val_times = 1999:2007,
-#'                  unit_var = "state",
-#'                  nsim = 50,
-#'                  verbose = FALSE)
+#'                 group_var = "group",
+#'                 time_var = "year",
+#'                 val_times = 1999:2007,
+#'                 unit_var = "state",
+#'                 nsim = 50,
+#'                 verbose = FALSE)
 #' fits
 #' 
 #' plot(fits, type = "weights")

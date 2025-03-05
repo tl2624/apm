@@ -22,16 +22,16 @@
 #' # Combination of 8 models: 1 baseline formulas,
 #' # 2 families, 2 lags, 2 time trends
 #' models1 <- apm_mod(crude_rate ~ 1,
-#'                     family = list("gaussian", "quasipoisson"),
-#'                     time_trend = 0:1,
-#'                     lag = 0:1, fixef = TRUE)
+#'                    family = list("gaussian", "quasipoisson"),
+#'                    time_trend = 0:1,
+#'                    lag = 0:1, fixef = TRUE)
 #' models1
 #' 
 #' # Add a single other model with a square time trend
 #' models2 <- apm_mod(crude_rate ~ 1,
-#'                     family = "gaussian",
-#'                     time_trend = 2,
-#'                     fixef = FALSE)
+#'                    family = "gaussian",
+#'                    time_trend = 2,
+#'                    fixef = FALSE)
 #' models2
 #' 
 #' (models <- c(models1, models2))

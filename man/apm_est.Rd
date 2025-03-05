@@ -82,20 +82,20 @@ data("ptpdata")
 
 # Combination of 4 models: 2 time trends, 2 lags
 models <- apm_mod(list(crude_rate ~ 1),
-                   lag = 0:1,
-                   time_trend = 0:1)
+                  lag = 0:1,
+                  time_trend = 0:1)
 models
 
 # Fit the models to data; unit_var must be supplied for
 # fixed effects
 fits <- apm_pre(models,
-                 data = ptpdata,
-                 group_var = "group",
-                 time_var = "year",
-                 val_times = 2004:2007,
-                 unit_var = "state",
-                 nsim = 100,
-                 verbose = FALSE)
+                data = ptpdata,
+                group_var = "group",
+                time_var = "year",
+                val_times = 2004:2007,
+                unit_var = "state",
+                nsim = 100,
+                verbose = FALSE)
 
 est <- apm_est(fits,
                post_time = 2008,
