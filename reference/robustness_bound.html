@@ -69,8 +69,8 @@
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Combination of 4 models: 2 time trends, 2 lags</span></span></span>
 <span class="r-in"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="apm_mod.html">apm_mod</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">crude_rate</span> <span class="op">~</span> <span class="fl">1</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                   lag <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span>,</span></span>
-<span class="r-in"><span>                   time_trend <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                  lag <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span>,</span></span>
+<span class="r-in"><span>                  time_trend <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">models</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - Model 1: baseline mean</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> crude_rate ~ 1</span>
@@ -111,13 +111,13 @@
 <span class="r-in"><span><span class="co"># Fit the models to data; unit_var must be supplied for</span></span></span>
 <span class="r-in"><span><span class="co"># fixed effects</span></span></span>
 <span class="r-in"><span><span class="va">fits</span> <span class="op">&lt;-</span> <span class="fu"><a href="apm_pre.html">apm_pre</a></span><span class="op">(</span><span class="va">models</span>,</span></span>
-<span class="r-in"><span>                 data <span class="op">=</span> <span class="va">ptpdata</span>,</span></span>
-<span class="r-in"><span>                 group_var <span class="op">=</span> <span class="st">"group"</span>,</span></span>
-<span class="r-in"><span>                 time_var <span class="op">=</span> <span class="st">"year"</span>,</span></span>
-<span class="r-in"><span>                 val_times <span class="op">=</span> <span class="fl">2004</span><span class="op">:</span><span class="fl">2007</span>,</span></span>
-<span class="r-in"><span>                 unit_var <span class="op">=</span> <span class="st">"state"</span>,</span></span>
-<span class="r-in"><span>                 nsim <span class="op">=</span> <span class="fl">100</span>,</span></span>
-<span class="r-in"><span>                 verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                data <span class="op">=</span> <span class="va">ptpdata</span>,</span></span>
+<span class="r-in"><span>                group_var <span class="op">=</span> <span class="st">"group"</span>,</span></span>
+<span class="r-in"><span>                time_var <span class="op">=</span> <span class="st">"year"</span>,</span></span>
+<span class="r-in"><span>                val_times <span class="op">=</span> <span class="fl">2004</span><span class="op">:</span><span class="fl">2007</span>,</span></span>
+<span class="r-in"><span>                unit_var <span class="op">=</span> <span class="st">"state"</span>,</span></span>
+<span class="r-in"><span>                nsim <span class="op">=</span> <span class="fl">100</span>,</span></span>
+<span class="r-in"><span>                verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">est</span> <span class="op">&lt;-</span> <span class="fu"><a href="apm_est.html">apm_est</a></span><span class="op">(</span><span class="va">fits</span>,</span></span>
 <span class="r-in"><span>               post_time <span class="op">=</span> <span class="fl">2008</span>,</span></span>
@@ -141,30 +141,30 @@
 <span class="r-in"><span><span class="co"># ATT estimate and bounds for M = 1</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">est</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       Estimate Std. Error  CI low CI high z_value Pr(&gt;|z|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ATT     1.0081     0.1572  0.7000  1.3162   6.413 1.43e-10 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> M = 1        .          . -0.1301  2.4250       .        .    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ATT     1.0217     0.1495  0.7286  1.3148   6.832 8.35e-12 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> M = 1        .          . -0.1756  2.4973       .        .    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#Changepoint value of M ignoring estimation uncertainty</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu">robustness_bound</span><span class="op">(</span><span class="va">est</span>, level <span class="op">=</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.558447</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.463209</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">est</span>, level <span class="op">=</span> <span class="fl">0</span>, M <span class="op">=</span> <span class="va">M</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          Estimate Std. Error CI low CI high z_value Pr(&gt;|z|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ATT        1.0081     0.1572 1.0081  1.0081   6.413 1.43e-10 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> M = 1.56        .          . 0.0000  2.0162       .        .    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ATT        1.0217     0.1495 1.0217  1.0217   6.832 8.35e-12 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> M = 1.46        .          . 0.0000  2.0435       .        .    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#Changepoint value of M accounting for estimation uncertainty</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu">robustness_bound</span><span class="op">(</span><span class="va">est</span>, level <span class="op">=</span> <span class="fl">.95</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.8828782</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.8521963</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">est</span>, level <span class="op">=</span> <span class="fl">.95</span>, M <span class="op">=</span> <span class="va">M</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          Estimate Std. Error CI low CI high z_value Pr(&gt;|z|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ATT        1.0081     0.1572 0.7000  1.3162   6.413 1.43e-10 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> M = 0.88        .          . 0.0000  2.2872       .        .    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ATT        1.0217     0.1495 0.7286  1.3148   6.832 8.35e-12 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> M = 0.85        .          . 0.0000  2.3130       .        .    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 </code></pre></div>

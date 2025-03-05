@@ -103,9 +103,9 @@
 <span class="r-in"><span><span class="co"># Combination of 8 models: 1 baseline formulas,</span></span></span>
 <span class="r-in"><span><span class="co"># 2 families, 2 lags, 2 time trends</span></span></span>
 <span class="r-in"><span><span class="va">models1</span> <span class="op">&lt;-</span> <span class="fu">apm_mod</span><span class="op">(</span><span class="va">crude_rate</span> <span class="op">~</span> <span class="fl">1</span>,</span></span>
-<span class="r-in"><span>                    family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"gaussian"</span>, <span class="st">"quasipoisson"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                    time_trend <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span>,</span></span>
-<span class="r-in"><span>                    lag <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span>, fixef <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                   family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"gaussian"</span>, <span class="st">"quasipoisson"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                   time_trend <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span>,</span></span>
+<span class="r-in"><span>                   lag <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span>, fixef <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">models1</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - Model 1: FE (Gaussian)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> crude_rate ~ 1</span>
@@ -181,9 +181,9 @@
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Add a single other model with a square time trend</span></span></span>
 <span class="r-in"><span><span class="va">models2</span> <span class="op">&lt;-</span> <span class="fu">apm_mod</span><span class="op">(</span><span class="va">crude_rate</span> <span class="op">~</span> <span class="fl">1</span>,</span></span>
-<span class="r-in"><span>                    family <span class="op">=</span> <span class="st">"gaussian"</span>,</span></span>
-<span class="r-in"><span>                    time_trend <span class="op">=</span> <span class="fl">2</span>,</span></span>
-<span class="r-in"><span>                    fixef <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                   family <span class="op">=</span> <span class="st">"gaussian"</span>,</span></span>
+<span class="r-in"><span>                   time_trend <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>                   fixef <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">models2</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - Model 1: quadratic trend</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> crude_rate ~ 1</span>

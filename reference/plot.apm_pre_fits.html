@@ -106,10 +106,10 @@
 <span class="r-in"><span><span class="co"># Combination of 8 models: 2 baseline formulas,</span></span></span>
 <span class="r-in"><span><span class="co"># 2 families, 2 lags</span></span></span>
 <span class="r-in"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="apm_mod.html">apm_mod</a></span><span class="op">(</span><span class="va">crude_rate</span> <span class="op">~</span> <span class="fl">1</span>,</span></span>
-<span class="r-in"><span>                   family <span class="op">=</span> <span class="st">"gaussian"</span>,</span></span>
-<span class="r-in"><span>                   time_trend <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span>,</span></span>
-<span class="r-in"><span>                   lag <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span>,</span></span>
-<span class="r-in"><span>                   diff_k <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span></span>
+<span class="r-in"><span>                  time_trend <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span>,</span></span>
+<span class="r-in"><span>                  lag <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span>,</span></span>
+<span class="r-in"><span>                  diff_k <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">models</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - Model 1: baseline mean</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> crude_rate ~ 1</span>
@@ -167,12 +167,12 @@
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Fit the models to data</span></span></span>
 <span class="r-in"><span><span class="va">fits</span> <span class="op">&lt;-</span> <span class="fu"><a href="apm_pre.html">apm_pre</a></span><span class="op">(</span><span class="va">models</span>, data <span class="op">=</span> <span class="va">ptpdata</span>,</span></span>
-<span class="r-in"><span>                 group_var <span class="op">=</span> <span class="st">"group"</span>,</span></span>
-<span class="r-in"><span>                 time_var <span class="op">=</span> <span class="st">"year"</span>,</span></span>
-<span class="r-in"><span>                 val_times <span class="op">=</span> <span class="fl">1999</span><span class="op">:</span><span class="fl">2007</span>,</span></span>
-<span class="r-in"><span>                 unit_var <span class="op">=</span> <span class="st">"state"</span>,</span></span>
-<span class="r-in"><span>                 nsim <span class="op">=</span> <span class="fl">50</span>,</span></span>
-<span class="r-in"><span>                 verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                group_var <span class="op">=</span> <span class="st">"group"</span>,</span></span>
+<span class="r-in"><span>                time_var <span class="op">=</span> <span class="st">"year"</span>,</span></span>
+<span class="r-in"><span>                val_times <span class="op">=</span> <span class="fl">1999</span><span class="op">:</span><span class="fl">2007</span>,</span></span>
+<span class="r-in"><span>                unit_var <span class="op">=</span> <span class="st">"state"</span>,</span></span>
+<span class="r-in"><span>                nsim <span class="op">=</span> <span class="fl">50</span>,</span></span>
+<span class="r-in"><span>                verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fits</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> An `apm_pre_fits` object</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>

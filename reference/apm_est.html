@@ -168,8 +168,8 @@
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Combination of 4 models: 2 time trends, 2 lags</span></span></span>
 <span class="r-in"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="apm_mod.html">apm_mod</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">crude_rate</span> <span class="op">~</span> <span class="fl">1</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                   lag <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span>,</span></span>
-<span class="r-in"><span>                   time_trend <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                  lag <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span>,</span></span>
+<span class="r-in"><span>                  time_trend <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">models</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - Model 1: baseline mean</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> crude_rate ~ 1</span>
@@ -210,13 +210,13 @@
 <span class="r-in"><span><span class="co"># Fit the models to data; unit_var must be supplied for</span></span></span>
 <span class="r-in"><span><span class="co"># fixed effects</span></span></span>
 <span class="r-in"><span><span class="va">fits</span> <span class="op">&lt;-</span> <span class="fu"><a href="apm_pre.html">apm_pre</a></span><span class="op">(</span><span class="va">models</span>,</span></span>
-<span class="r-in"><span>                 data <span class="op">=</span> <span class="va">ptpdata</span>,</span></span>
-<span class="r-in"><span>                 group_var <span class="op">=</span> <span class="st">"group"</span>,</span></span>
-<span class="r-in"><span>                 time_var <span class="op">=</span> <span class="st">"year"</span>,</span></span>
-<span class="r-in"><span>                 val_times <span class="op">=</span> <span class="fl">2004</span><span class="op">:</span><span class="fl">2007</span>,</span></span>
-<span class="r-in"><span>                 unit_var <span class="op">=</span> <span class="st">"state"</span>,</span></span>
-<span class="r-in"><span>                 nsim <span class="op">=</span> <span class="fl">100</span>,</span></span>
-<span class="r-in"><span>                 verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                data <span class="op">=</span> <span class="va">ptpdata</span>,</span></span>
+<span class="r-in"><span>                group_var <span class="op">=</span> <span class="st">"group"</span>,</span></span>
+<span class="r-in"><span>                time_var <span class="op">=</span> <span class="st">"year"</span>,</span></span>
+<span class="r-in"><span>                val_times <span class="op">=</span> <span class="fl">2004</span><span class="op">:</span><span class="fl">2007</span>,</span></span>
+<span class="r-in"><span>                unit_var <span class="op">=</span> <span class="st">"state"</span>,</span></span>
+<span class="r-in"><span>                nsim <span class="op">=</span> <span class="fl">100</span>,</span></span>
+<span class="r-in"><span>                verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">est</span> <span class="op">&lt;-</span> <span class="fu">apm_est</span><span class="op">(</span><span class="va">fits</span>,</span></span>
 <span class="r-in"><span>               post_time <span class="op">=</span> <span class="fl">2008</span>,</span></span>
