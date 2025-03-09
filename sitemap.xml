@@ -1,16 +1,16 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
-<url><loc>/404.html</loc></url>
-<url><loc>/articles/apm.html</loc></url>
-<url><loc>/articles/index.html</loc></url>
-<url><loc>/authors.html</loc></url>
-<url><loc>/index.html</loc></url>
-<url><loc>/reference/apm-package.html</loc></url>
-<url><loc>/reference/apm_est.html</loc></url>
-<url><loc>/reference/apm_mod.html</loc></url>
-<url><loc>/reference/apm_pre.html</loc></url>
-<url><loc>/reference/index.html</loc></url>
-<url><loc>/reference/plot.apm_pre_fits.html</loc></url>
-<url><loc>/reference/ptpdata.html</loc></url>
-<url><loc>/reference/robustness_bound.html</loc></url>
+<url><loc>https://tl2624.github.io/apm/404.html</loc></url>
+<url><loc>https://tl2624.github.io/apm/articles/apm.html</loc></url>
+<url><loc>https://tl2624.github.io/apm/articles/index.html</loc></url>
+<url><loc>https://tl2624.github.io/apm/authors.html</loc></url>
+<url><loc>https://tl2624.github.io/apm/index.html</loc></url>
+<url><loc>https://tl2624.github.io/apm/reference/apm-package.html</loc></url>
+<url><loc>https://tl2624.github.io/apm/reference/apm_est.html</loc></url>
+<url><loc>https://tl2624.github.io/apm/reference/apm_mod.html</loc></url>
+<url><loc>https://tl2624.github.io/apm/reference/apm_pre.html</loc></url>
+<url><loc>https://tl2624.github.io/apm/reference/index.html</loc></url>
+<url><loc>https://tl2624.github.io/apm/reference/plot.apm_pre_fits.html</loc></url>
+<url><loc>https://tl2624.github.io/apm/reference/ptpdata.html</loc></url>
+<url><loc>https://tl2624.github.io/apm/reference/robustness_bound.html</loc></url>
 </urlset>
 
