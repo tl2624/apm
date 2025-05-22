@@ -1,9 +1,9 @@
 pandoc: 3.1.11
-pkgdown: 2.1.1
+pkgdown: 2.1.2
 pkgdown_sha: ~
 articles:
   apm: apm.html
-last_built: 2025-03-09T03:29Z
+last_built: 2025-05-22T16:00Z
 urls:
   reference: https://tl2624.github.io/apm/reference
   article: https://tl2624.github.io/apm/articles
