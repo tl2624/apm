@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 ## `apm`: Averaged Prediction Models
 
 <!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/apm)](https://CRAN.R-project.org/package=apm)
 <!-- badges: end -->
 
 ## Introduction
@@ -28,16 +29,19 @@ Because many models may be plausible for this prediction task, we combine them u
 
 ## Installation
 
+To install the package from CRAN, use
+
+```{r, eval = FALSE}
+install.packages("apm")
+```
+
 To install the development version from GitHub, use:
 
 ```{r eval = FALSE}
-
 # Install devtools if not already installed
 install.packages("remotes")
 
-# Install apm package from GitHub if not already installed
 remotes::install_github("tl2624/apm")
-
 ```
 
 See `vignette("apm")` for details on using the package.

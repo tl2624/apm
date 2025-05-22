@@ -10,8 +10,8 @@
 #' @param all_models `logical`; whether to compute ATTs for all models (`TRUE`) or just those with BMA weights greater than 0 (`FALSE`, default). This will not effect the final estimates but leaving as `FALSE` can speed up computation when some models have BMA weights of 0.
 #' @param x,object an `apm_est` object; the output of a call to `apm_est()`.
 #' @param level the desired confidence level. Set to 0 to ignore sampling variation in computing the interval bounds. Default is .95.
-#' @param label `logical`; whether to label the ATT estimates. Requires \pkg{ggrepel} to be installed. Default is `TRUE`.
-#' @param size.weights `logicsl`; whether to size the points based on their BMA weights. Default is `TRUE`.
+#' @param label `logical`; whether to label the ATT estimates. Default is `TRUE`.
+#' @param size.weights `logical`; whether to size the points based on their BMA weights. Default is `TRUE`.
 #' @param cl a cluster object created by [parallel::makeCluster()], an integer to indicate number of child-processes (ignored on Windows) for parallel evaluations, or `"future"` to use a future backend. `NULL` (default) refers to sequential evaluation. See [fwb::fwb()] for details and issues related to replicability.
 #' @param \dots other arguments passed to [fwb::fwb()].
 #' 
@@ -413,7 +413,7 @@ summary.apm_est <- function(object, level = .95, M = NULL, ...) {
   
   rownames(res) <- "ATT"
   
-  if (is.null(M)) {
+  if (is_null(M)) {
     M <- object[["M"]]
   }
   else {
@@ -424,7 +424,7 @@ summary.apm_est <- function(object, level = .95, M = NULL, ...) {
     M <- M[M > 0]
   }
   
-  if (length(M) > 0L) {
+  if (!is_null(M)) {
     if (object[["M"]] == 0) {
       chk::err("`M` cannot be nonzero when `M` was 0 in the call to `apm_est()`")
     }

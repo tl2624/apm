@@ -3,14 +3,17 @@
 #same results as M-estimation (HC0 vcov). Cluster-robust vcov available.
 vcovSUEST <- function(fits, cluster = NULL) {
   
-  if (is.null(names(fits)) || anyDuplicated(names(fits)) > 0) {
+  if (is_null(names(fits)) || anyDuplicated(names(fits)) > 0) {
     names(fits) <- paste0("fit_", seq_along(fits))
   }
   
   rn <- lapply(fits, function(x) rownames(naresid(x$na.action, model.matrix(x))))
   u <- unique(unlist(rn, use.names = FALSE))
   
-  if (!is.null(cluster)) {
+  if (is_null(cluster)) {
+    cluster <- list(u)
+  }
+  else {
     if (inherits(cluster, "formula")) {
       cluster_tmp <- expand.model.frame(fits[[1L]], cluster, na.expand = TRUE)
       cluster_f <- as.list(model.frame(cluster, cluster_tmp, na.action = na.pass))
@@ -36,9 +39,6 @@ vcovSUEST <- function(fits, cluster = NULL) {
     }
     
     cluster <- c(cluster_f, list(u))
-  }
-  else {
-    cluster <- list(u)
   }
   
   p <- length(cluster)
@@ -124,7 +124,7 @@ vcovSUEST <- function(fits, cluster = NULL) {
   V
 }
 
-#Quickly get bread matrix; for non-lm and nonglm objects, uses sandwich::bread()
+#Quickly get bread matrix; for non-lm and non-glm objects, uses sandwich::bread()
 .bread <- function(x) {
   if (!class(x)[1L] %in% c("lm", "glm")) {
     return(sandwich::bread(x))

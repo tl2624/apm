@@ -1,6 +1,6 @@
 Package: apm
 Title: Averaged Prediction Models
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 
   c(person("Thomas", "Leavitt", email = "thomas.leavitt@baruch.cuny.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-3668-6409")),
@@ -31,5 +31,5 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 LazyData: true
 VignetteBuilder: knitr
-URL: https://tl2624.github.io/apm/
+URL: https://github.com/tl2624/apm/, https://tl2624.github.io/apm/
 BugReports: https://github.com/tl2624/apm/issues

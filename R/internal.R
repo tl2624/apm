@@ -3,7 +3,7 @@
   
   
   # Effectively subset without dropping any observations
-  if (is.null(weights)) {
+  if (is_null(weights)) {
     weights <- rep.int(1, nrow(mod$data))
   }
   
@@ -83,7 +83,7 @@
   }
   
   if (model$diff_k > 0 && model$family$link == "log") {
-    if (is.null(outcome)) {
+    if (is_null(outcome)) {
       outcome <- model.response(model.frame(update(formula, . ~ 1), data = data))
     }
     
@@ -166,7 +166,7 @@
                    xlev = fit$xlevels)
   
   cl <- attr(Terms, "dataClasses")
-  if (!is.null(cl)) {
+  if (!is_null(cl)) {
     .checkMFClasses(cl, m)
   }
   
@@ -174,9 +174,9 @@
   
   offset <- model.offset(m)
   addO <- fit$call$offset
-  if (!is.null(addO)) {
+  if (!is_null(addO)) {
     addO <- eval(addO, newdata, environment(tt))
-    offset <- if (length(offset) > 0L) offset + addO else addO
+    offset <- if (is_null(offset)) addO else offset + addO
   }
   
   piv <- fit$qr$pivot[seq_len(fit$rank)]
@@ -189,7 +189,7 @@
 # .make_predict_prep()), and inverse link (fit$family$linkinv)
 .predict_quick <- function(beta, predict_prep, linkinv = NULL) {
   
-  if (is.null(linkinv)) {
+  if (is_null(linkinv)) {
     linkinv <- identity
   }
   
@@ -210,7 +210,7 @@
   if (class(fit)[1L] == "lm") {
     x <- model.matrix(fit)
     y <- {
-      if (is.null(fit[["y"]])) model.response(model.frame(fit))
+      if (is_null(fit[["y"]])) model.response(model.frame(fit))
       else fit[["y"]]
     }
     
@@ -221,7 +221,7 @@
   else if (class(fit)[1L] == "glm") {
     x <- model.matrix(fit)
     y <- {
-      if (is.null(fit[["y"]])) model.response(model.frame(fit))
+      if (is_null(fit[["y"]])) model.response(model.frame(fit))
       else fit[["y"]]
     }
     

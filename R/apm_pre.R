@@ -73,7 +73,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   # Process and order dataset
   data <- as.data.frame(data)
   
-  if (is.null(rownames(data))) {
+  if (is_null(rownames(data))) {
     rownames(data) <- seq_len(nrow(data))
   }
   
@@ -102,7 +102,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   chk::chk_numeric(val_times)
   chk::chk_subset(val_times, data[[time_var]])
   
-  if (is.null(weights)) {
+  if (is_null(weights)) {
     weights <- rep.int(1, nrow(data))
   }
   else {
@@ -229,7 +229,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   }
   
   #Difference in average prediction errors
-  pred_error_diffs_mat <- pred_errors_array[, , 2L] - pred_errors_array[, , 1L]
+  pred_error_diffs_mat <- pred_errors_array[, , 2L, drop = FALSE] - pred_errors_array[, , 1L, drop = FALSE]
   
   #Simulate to get BMA weights
   
@@ -291,10 +291,7 @@ apm_pre <- function(models, data, weights = NULL, group_var, time_var,
   }, cl = cl))
   
   optimal_models <- vapply(seq_len(nsim), function(s) {
-    worst_pred_within_model <- {
-      if (is.null(dim(pred_error_diffs_sim[, , s]))) max(abs(pred_error_diffs_sim[, , s]))
-      else .colMax(abs(pred_error_diffs_sim[, , s]))
-    }
+    worst_pred_within_model <- .colMax(abs(pred_error_diffs_sim[, , s, drop = FALSE]))
     
     which.min(worst_pred_within_model)
   }, integer(1L))
@@ -354,7 +351,7 @@ summary.apm_pre_fits <- function(object, order = NULL, ...) {
   
   names(out) <- c("BMA weights", "Max|errors|")
   
-  if (!is.null(order)) {
+  if (!is_null(order)) {
     chk::chk_string(order)
     order <- .match_arg(order, c("weights", "errors"))
     

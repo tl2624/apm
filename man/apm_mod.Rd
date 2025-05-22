@@ -63,5 +63,5 @@ models[[4]] <- NULL
 models
 }
 \seealso{
-\link{formula}, \link{family}
+\code{\link[=formula]{formula()}}, \code{\link[=family]{family()}}
 }

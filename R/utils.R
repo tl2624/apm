@@ -1,14 +1,14 @@
 #Fast (weighted) mean, optionally with subset
 .wtd_mean <- function(x, w = NULL, subset = NULL) {
-  if (!is.null(subset)) {
-    if (is.null(w)) {
+  if (!is_null(subset)) {
+    if (is_null(w)) {
       return(Recall(x[subset]))
     }
     
     return(Recall(x[subset], w = w[subset]))
   }
   
-  if (is.null(w)) {
+  if (is_null(w)) {
     sum(x) / length(x)
   }
   else {
@@ -17,15 +17,15 @@
 }
 
 .wtd_sd <- function(x, w = NULL, subset = NULL) {
-  if (!is.null(subset)) {
-    if (is.null(w)) {
+  if (!is_null(subset)) {
+    if (is_null(w)) {
       return(Recall(x[subset]))
     }
     
     return(Recall(x[subset], w = w[subset]))
   }
   
-  if (is.null(w)) {
+  if (is_null(w)) {
     sqrt(sum((x - .wtd_mean(x))^2) / (length(x) - 1))
   }
   else {
@@ -49,8 +49,14 @@
 #Checks if a given family specification is okay
 .okay_family <- function(family) {
   if (is.character(family)) {
-    if (length(family) != 1L || anyNA(family)) return(FALSE)
-    if (family %in% c("negbin", "negative.binomial", "Negative Binomial")) return(TRUE)
+    if (length(family) != 1L || anyNA(family)) {
+      return(FALSE)
+    }
+    
+    if (family %in% c("negbin", "negative.binomial", "Negative Binomial")) {
+      return(TRUE)
+    }
+    
     family <- get(family, mode = "function", envir = parent.frame(2L))
   }
   
@@ -58,13 +64,13 @@
     family <- family()
   }
   
-  length(family$family) > 0L &&
+  !is_null(family$family) &&
     is.function(family$variance) &&
     is.function(family$linkinv)
 }
 
 .ordinal <- function(x) {
-  if (length(x) == 0L || !is.numeric(x)) {
+  if (is_null(x) || !is.numeric(x)) {
     stop("'x' must be a numeric vector.")
   }
   
@@ -113,7 +119,7 @@
   #Replaces match.arg() but gives cleaner error message and processing
   #of arg.
   if (missing(arg)) {
-    stop("No argument was supplied to match_arg.")
+    chk::err("no argument was supplied to `match_arg()`")
   }
   
   arg.name <- deparse1(substitute(arg), width.cutoff = 500L)
@@ -125,7 +131,7 @@
                     envir = sys.frame(sysP))
   }
   
-  if (length(arg) == 0L) {
+  if (is_null(arg)) {
     return(choices[1L])
   }
   
@@ -157,7 +163,7 @@
   
   word.list <- setdiff(word.list, c(NA_character_, ""))
   
-  if (length(word.list) == 0L) {
+  if (is_null(word.list)) {
     out <- ""
     attr(out, "plural") <- FALSE
     return(out)
@@ -174,7 +180,7 @@
     return(out)
   }
   
-  if (length(and.or) == 0L || isFALSE(and.or)) {
+  if (is_null(and.or) || isFALSE(and.or)) {
     out <- toString(word.list)
   }
   else {
@@ -194,7 +200,9 @@
     }
   }
   
-  if (is.are) out <- sprintf("%s are", out)
+  if (is.are) {
+    out <- sprintf("%s are", out)
+  }
   
   attr(out, "plural") <- TRUE
   
@@ -245,4 +253,8 @@
   }
   
   old
+}
+
+is_null <- function(x) {
+  length(x) == 0L
 }

@@ -42,9 +42,9 @@ apm_est(
 
 \item{x, object}{an \code{apm_est} object; the output of a call to \code{apm_est()}.}
 
-\item{label}{\code{logical}; whether to label the ATT estimates. Requires \pkg{ggrepel} to be installed. Default is \code{TRUE}.}
+\item{label}{\code{logical}; whether to label the ATT estimates. Default is \code{TRUE}.}
 
-\item{size.weights}{\code{logicsl}; whether to size the points based on their BMA weights. Default is \code{TRUE}.}
+\item{size.weights}{\code{logical}; whether to size the points based on their BMA weights. Default is \code{TRUE}.}
 }
 \value{
 \code{apm_est()} returns an \code{apm_est} object, which contains the ATT estimates and their variance estimates. The following components are included:

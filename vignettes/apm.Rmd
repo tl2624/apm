@@ -171,7 +171,7 @@ plot(fits, type = "predict")
 
 ```
 
-Finally, we can also show the winning model's corrected predictions, that is, after incorporating the prediction error in the control group <!-- this seems like an overly complicated definition; the y axis scale says "outcome" rather than error; could it be that in both this plot and the one above, it's not on the prediction error scale, but the scale of the predictions themselves? I think that's true, the figure titles are wrong, they're showing predictions, not errors --> To observe the corrected predictions, we can set `type = "corrected"`, which is the prediction for the treated group, corrected for the comparison group's prediction error.
+Finally, we can also show the winning model's corrected predictions, that is, after incorporating the prediction error in the control group. To observe the corrected predictions, we can set `type = "corrected"`, which is the prediction for the treated group, corrected for the comparison group's prediction error.
 
 ```{r, fig.width = 6, fig.height = 5, out.width = "\\textwidth", fig.align = "center"}
 
@@ -274,9 +274,9 @@ Built on a unified identification framework, APM offers a flexible, data-driven 
 
 For more details, see:
 
--   [GitHub Repository](https://github.com/ngreifer/apm)
+-   [GitHub Repository](https://github.com/tl2624/apm)
 
--   [Paper on APM Methodology](https://static1.squarespace.com/static/5d54a19a5a1edf0001ea677a/t/67925707ef4f220a4827ce23/1737643784263/apm_preprint.pdf)
+-   [Paper on APM Methodology](https://www.tomleavitt.com/s/aoas_submission_final.pdf)
 
 ------------------------------------------------------------------------
 

@@ -4,6 +4,9 @@
 ## `apm`: Averaged Prediction Models
 
 <!-- badges: start -->
+
+[![CRAN
+status](https://www.r-pkg.org/badges/version/apm)](https://CRAN.R-project.org/package=apm)
 <!-- badges: end -->
 
 ## Introduction
@@ -28,14 +31,18 @@ robustness to violations of the causal assumption.
 
 ## Installation
 
+To install the package from CRAN, use
+
+``` r
+install.packages("apm")
+```
+
 To install the development version from GitHub, use:
 
 ``` r
-
 # Install devtools if not already installed
 install.packages("remotes")
 
-# Install apm package from GitHub if not already installed
 remotes::install_github("tl2624/apm")
 ```
 

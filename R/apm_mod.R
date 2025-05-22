@@ -14,7 +14,7 @@
 #' @returns
 #' An `apm_models` object, which is a list containing the full cross (less any omitted combinations) of the model features specified in the arguments, with each combination a list. These have a `print()` method and can be combined using `c()`. Each model is named automatically, but these can be set manually using [names()] as well. Models can be removed by setting their value to `NULL`; see Examples.
 #' 
-#' @seealso [formula], [family]
+#' @seealso [formula()], [family()]
 #' 
 #' @examples 
 #' data("ptpdata")
@@ -232,12 +232,12 @@ c.apm_models <- function(..., recursive = TRUE) {
 .name_mods <- function(models) {
   ff <- unlist(lapply(models, function(m) {
     tt <- terms(m$formula)
-    if (length(attr(tt, "term.labels")) > 0L) {
+    if (!is_null(attr(tt, "term.labels", TRUE))) {
       deparse1(tt)
     }
   }))
   
-  id_models <- length(ff) > 0L && length(unique(ff)) > 1L
+  id_models <- !is_null(ff) && length(unique(ff)) > 1L
   
   ff2 <- lapply(models, function(m) {
     fam <- m$family
@@ -255,7 +255,7 @@ c.apm_models <- function(..., recursive = TRUE) {
       else {
         famfun <- get0(ff2[[m]]["family"], mode = "function")
         okay <- {
-          if (is.null(famfun)) FALSE
+          if (is_null(famfun)) FALSE
           else ff2[[m]]["link"] == eval(formals(famfun)[["link"]])
         }
       }
@@ -278,7 +278,7 @@ c.apm_models <- function(..., recursive = TRUE) {
     
     formula <- terms(model$formula)
     
-    if (length(attr(formula, "term.labels")) > 0L) {
+    if (!is_null(attr(formula, "term.labels", TRUE))) {
       n <- {
         if (id_models) sprintf("baseline model %s", match(deparse1(formula), ff))
         else "baseline model"
@@ -286,7 +286,7 @@ c.apm_models <- function(..., recursive = TRUE) {
     }
     else if (model$time_trend == 0 && model$lag == 0 && !model$fixef) {
       n <- {
-        if (attr(formula, "intercept") == 0) "empty model"
+        if (attr(formula, "intercept", TRUE) == 0) "empty model"
         else "baseline mean"
       }
     }
@@ -323,7 +323,7 @@ c.apm_models <- function(..., recursive = TRUE) {
     
     n <- paste(n, collapse = " + ")
     
-    if (length(n2) > 0) {
+    if (!is_null(n2)) {
       n <- sprintf("%s (%s)", n, toString(n2))
     }
     

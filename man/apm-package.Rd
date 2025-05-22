@@ -11,7 +11,6 @@ In panel data settings, specifies set of candidate models, fits them to data fro
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/tl2624/apm}
   \item \url{https://tl2624.github.io/apm/}
   \item Report bugs at \url{https://github.com/tl2624/apm/issues}
 }
