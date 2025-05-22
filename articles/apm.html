@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">apm</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,7 @@
       <ul class="navbar-nav me-auto">
 <li class="active nav-item"><a class="nav-link" href="../articles/apm.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -158,7 +159,7 @@ and constructs both statistical and causal bounds around it.</p></li>
 Vernick 2014</a>; <a href="#ref-hasegawaetal2019">Hasegawa, Webster, and
 Small 2019</a>)</span>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tl2624.github.io/apm/">apm</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tl2624/apm/" class="external-link">apm</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="load-example-data">Load Example Data<a class="anchor" aria-label="anchor" href="#load-example-data"></a>
 </h3>
@@ -330,8 +331,7 @@ predicted outcomes as lines.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fits</span>, type <span class="op">=</span> <span class="st">"predict"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="apm_files/figure-html/unnamed-chunk-7-1.png" width="\textwidth" style="display: block; margin: auto;"></p>
 <p>Finally, we can also show the winning model’s corrected predictions,
-that is, after incorporating the prediction error in the control group
-<!-- this seems like an overly complicated definition; the y axis scale says "outcome" rather than error; could it be that in both this plot and the one above, it's not on the prediction error scale, but the scale of the predictions themselves? I think that's true, the figure titles are wrong, they're showing predictions, not errors -->
+that is, after incorporating the prediction error in the control group.
 To observe the corrected predictions, we can set
 <code>type = "corrected"</code>, which is the prediction for the treated
 group, corrected for the comparison group’s prediction error.</p>
@@ -471,10 +471,10 @@ researchers can achieve greater flexibility in model selection while
 maintaining rigorous and principled inference.</p>
 <p>For more details, see:</p>
 <ul>
-<li><p><a href="https://github.com/ngreifer/apm" class="external-link">GitHub
+<li><p><a href="https://github.com/tl2624/apm" class="external-link">GitHub
 Repository</a></p></li>
-<li><p><a href="https://static1.squarespace.com/static/5d54a19a5a1edf0001ea677a/t/67925707ef4f220a4827ce23/1737643784263/apm_preprint.pdf" class="external-link">Paper
-on APM Methodology</a></p></li>
+<li><p><a href="https://www.tomleavitt.com/s/aoas_submission_final.pdf" class="external-link">Paper on
+APM Methodology</a></p></li>
 </ul>
 <hr>
 </div>
